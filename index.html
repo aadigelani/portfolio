@@ -1,607 +1,599 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
   <title>Aaditya Gelani</title>
-  <link rel="stylesheet" href="style.css" />
-  <link rel="preconnect" href="https://fonts.googleapis.com" />
-  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet" />
-  <!-- GSAP CDN -->
+  <link rel="stylesheet" href="style.css"/>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet"/>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
 </head>
 <body>
 
-<!-- ============================================================
-     BOOT SCREEN — MECHANICAL ACTIVATION
-     ============================================================ -->
+<!-- ═══════════════════════════════════════════════════════════
+     BOOT SCREEN
+═══════════════════════════════════════════════════════════ -->
 <div id="boot-screen">
-  <canvas id="bg-canvas"></canvas>
 
-  <!-- Grid overlay -->
-  <div class="grid-overlay"></div>
+  <canvas id="particle-canvas" aria-hidden="true"></canvas>
+  <div class="grid-layer"   aria-hidden="true"></div>
+  <div class="vignette"     aria-hidden="true"></div>
 
-  <!-- Mechanical assembly -->
-  <div id="mech-container">
+  <!-- Central system frame — all boot elements anchor here -->
+  <div class="system-frame">
 
-    <!-- Large Gear Left -->
-    <svg id="gear-left" class="gear" viewBox="0 0 120 120" width="140" height="140">
-      <g id="gear-left-group">
-        <circle cx="60" cy="60" r="38" fill="none" stroke="#00ff88" stroke-width="3"/>
-        <circle cx="60" cy="60" r="18" fill="#0a0f0a" stroke="#00ff88" stroke-width="2"/>
-        <circle cx="60" cy="60" r="6" fill="#00ff88"/>
-        <!-- Teeth -->
-        <rect x="55" y="12" width="10" height="16" rx="2" fill="#00ff88"/>
-        <rect x="55" y="92" width="10" height="16" rx="2" fill="#00ff88"/>
-        <rect x="12" y="55" width="16" height="10" rx="2" fill="#00ff88"/>
-        <rect x="92" y="55" width="16" height="10" rx="2" fill="#00ff88"/>
-        <rect x="24" y="24" width="10" height="16" rx="2" fill="#00ff88" transform="rotate(45 60 60) translate(0 -26)"/>
-        <rect x="24" y="24" width="10" height="16" rx="2" fill="#00ff88" transform="rotate(90 60 60) translate(0 -26)"/>
-        <rect x="24" y="24" width="10" height="16" rx="2" fill="#00ff88" transform="rotate(135 60 60) translate(0 -26)"/>
-        <rect x="24" y="24" width="10" height="16" rx="2" fill="#00ff88" transform="rotate(225 60 60) translate(0 -26)"/>
-        <rect x="24" y="24" width="10" height="16" rx="2" fill="#00ff88" transform="rotate(270 60 60) translate(0 -26)"/>
-        <rect x="24" y="24" width="10" height="16" rx="2" fill="#00ff88" transform="rotate(315 60 60) translate(0 -26)"/>
-        <!-- Spokes -->
-        <line x1="60" y1="30" x2="60" y2="90" stroke="#00ff8844" stroke-width="1.5"/>
-        <line x1="30" y1="60" x2="90" y2="60" stroke="#00ff8844" stroke-width="1.5"/>
-        <line x1="39" y1="39" x2="81" y2="81" stroke="#00ff8844" stroke-width="1.5"/>
-        <line x1="81" y1="39" x2="39" y2="81" stroke="#00ff8844" stroke-width="1.5"/>
-      </g>
-    </svg>
-
-    <!-- Small Gear Right -->
-    <svg id="gear-right" class="gear" viewBox="0 0 80 80" width="90" height="90">
-      <g id="gear-right-group">
-        <circle cx="40" cy="40" r="24" fill="none" stroke="#00ccff" stroke-width="2.5"/>
-        <circle cx="40" cy="40" r="10" fill="#0a0f0a" stroke="#00ccff" stroke-width="2"/>
-        <circle cx="40" cy="40" r="4" fill="#00ccff"/>
-        <rect x="36" y="6" width="8" height="12" rx="1.5" fill="#00ccff"/>
-        <rect x="36" y="62" width="8" height="12" rx="1.5" fill="#00ccff"/>
-        <rect x="6" y="36" width="12" height="8" rx="1.5" fill="#00ccff"/>
-        <rect x="62" y="36" width="12" height="8" rx="1.5" fill="#00ccff"/>
-        <rect x="36" y="6" width="8" height="12" rx="1.5" fill="#00ccff" transform="rotate(45 40 40)"/>
-        <rect x="36" y="6" width="8" height="12" rx="1.5" fill="#00ccff" transform="rotate(90 40 40)"/>
-        <rect x="36" y="6" width="8" height="12" rx="1.5" fill="#00ccff" transform="rotate(135 40 40)"/>
-        <rect x="36" y="6" width="8" height="12" rx="1.5" fill="#00ccff" transform="rotate(225 40 40)"/>
-        <rect x="36" y="6" width="8" height="12" rx="1.5" fill="#00ccff" transform="rotate(270 40 40)"/>
-        <rect x="36" y="6" width="8" height="12" rx="1.5" fill="#00ccff" transform="rotate(315 40 40)"/>
-        <line x1="40" y1="22" x2="40" y2="58" stroke="#00ccff44" stroke-width="1.5"/>
-        <line x1="22" y1="40" x2="58" y2="40" stroke="#00ccff44" stroke-width="1.5"/>
-      </g>
-    </svg>
-
-    <!-- Rope + Pull area -->
-    <div id="rope-container">
-      <div id="rope-shaft"></div>
-      <div id="rope-knob">
-        <span class="rope-arrow">↓</span>
-        <span class="rope-label">PULL</span>
-      </div>
-      <div id="rope-hint">DRAG TO ENGAGE SYSTEM</div>
+    <!-- Top status bar -->
+    <div class="frame-topbar" aria-hidden="true">
+      <span class="fb-id">SYS::BOOT_v2.1</span>
+      <span class="fb-dots"><span></span><span></span><span></span></span>
+      <span class="fb-status" id="boot-status">STANDBY</span>
     </div>
 
-    <!-- The reveal plate -->
-    <div id="reveal-plate">
-      <div id="plate-inner">
-        <div id="plate-grid"></div>
-        <div id="name-display">
-          <div class="name-pre">// SYSTEM BOOT COMPLETE</div>
-          <div id="name-text">AADITYA GELANI</div>
-          <div class="name-sub">Electronics &amp; Communication Engineer</div>
-          <div class="name-tags">
-            <span class="tag">[ Power Systems ]</span>
-            <span class="tag">[ Semiconductors ]</span>
-            <span class="tag">[ Sensor Processing ]</span>
-          </div>
-          <button id="enter-btn" class="sys-btn">
-            <span class="btn-prefix">&gt;&gt;</span> INITIALIZE SYSTEM
-          </button>
+    <!-- Gear assembly row -->
+    <div class="gear-row" aria-hidden="true">
+
+      <!-- LEFT gear -->
+      <div class="gear-wrap" id="gw-left">
+        <svg class="gear-svg" viewBox="0 0 120 120">
+          <g id="gl-g" transform-origin="60 60">
+            <circle cx="60" cy="60" r="35" fill="none" stroke="var(--g)" stroke-width="2.5" opacity=".9"/>
+            <circle cx="60" cy="60" r="13" fill="var(--bg)" stroke="var(--g)" stroke-width="2"/>
+            <circle cx="60" cy="60" r="5"  fill="var(--g)"/>
+            <rect x="55" y="11" width="10" height="16" rx="2" fill="var(--g)"/>
+            <rect x="55" y="11" width="10" height="16" rx="2" fill="var(--g)" transform="rotate(30 60 60)"/>
+            <rect x="55" y="11" width="10" height="16" rx="2" fill="var(--g)" transform="rotate(60 60 60)"/>
+            <rect x="55" y="11" width="10" height="16" rx="2" fill="var(--g)" transform="rotate(90 60 60)"/>
+            <rect x="55" y="11" width="10" height="16" rx="2" fill="var(--g)" transform="rotate(120 60 60)"/>
+            <rect x="55" y="11" width="10" height="16" rx="2" fill="var(--g)" transform="rotate(150 60 60)"/>
+            <rect x="55" y="11" width="10" height="16" rx="2" fill="var(--g)" transform="rotate(180 60 60)"/>
+            <rect x="55" y="11" width="10" height="16" rx="2" fill="var(--g)" transform="rotate(210 60 60)"/>
+            <rect x="55" y="11" width="10" height="16" rx="2" fill="var(--g)" transform="rotate(240 60 60)"/>
+            <rect x="55" y="11" width="10" height="16" rx="2" fill="var(--g)" transform="rotate(270 60 60)"/>
+            <rect x="55" y="11" width="10" height="16" rx="2" fill="var(--g)" transform="rotate(300 60 60)"/>
+            <rect x="55" y="11" width="10" height="16" rx="2" fill="var(--g)" transform="rotate(330 60 60)"/>
+            <line x1="60" y1="26" x2="60" y2="94" stroke="var(--g-dim)" stroke-width="1.5"/>
+            <line x1="26" y1="60" x2="94" y2="60" stroke="var(--g-dim)" stroke-width="1.5"/>
+            <line x1="37" y1="37" x2="83" y2="83" stroke="var(--g-dim)" stroke-width="1"/>
+            <line x1="83" y1="37" x2="37" y2="83" stroke="var(--g-dim)" stroke-width="1"/>
+          </g>
+        </svg>
+      </div>
+
+      <!-- Belt SVG — absolutely positioned, spans between gears -->
+      <svg class="belt-svg" id="belt-svg" viewBox="0 0 260 80" preserveAspectRatio="none" aria-hidden="true">
+        <path id="belt-t" d="M 6 28 Q 130 8  254 28" fill="none" stroke="var(--g-dim)" stroke-width="2.5" stroke-dasharray="9 5"/>
+        <path id="belt-b" d="M 6 52 Q 130 72 254 52" fill="none" stroke="var(--g-dim)" stroke-width="2.5" stroke-dasharray="9 5"/>
+      </svg>
+
+      <!-- RIGHT gear (smaller) -->
+      <div class="gear-wrap" id="gw-right">
+        <svg class="gear-svg" viewBox="0 0 80 80">
+          <g id="gr-g" transform-origin="40 40">
+            <circle cx="40" cy="40" r="22" fill="none" stroke="var(--c)" stroke-width="2" opacity=".9"/>
+            <circle cx="40" cy="40" r="8"  fill="var(--bg)" stroke="var(--c)" stroke-width="1.5"/>
+            <circle cx="40" cy="40" r="3.5" fill="var(--c)"/>
+            <rect x="36" y="9" width="8" height="13" rx="1.5" fill="var(--c)"/>
+            <rect x="36" y="9" width="8" height="13" rx="1.5" fill="var(--c)" transform="rotate(45 40 40)"/>
+            <rect x="36" y="9" width="8" height="13" rx="1.5" fill="var(--c)" transform="rotate(90 40 40)"/>
+            <rect x="36" y="9" width="8" height="13" rx="1.5" fill="var(--c)" transform="rotate(135 40 40)"/>
+            <rect x="36" y="9" width="8" height="13" rx="1.5" fill="var(--c)" transform="rotate(180 40 40)"/>
+            <rect x="36" y="9" width="8" height="13" rx="1.5" fill="var(--c)" transform="rotate(225 40 40)"/>
+            <rect x="36" y="9" width="8" height="13" rx="1.5" fill="var(--c)" transform="rotate(270 40 40)"/>
+            <rect x="36" y="9" width="8" height="13" rx="1.5" fill="var(--c)" transform="rotate(315 40 40)"/>
+            <line x1="40" y1="19" x2="40" y2="61" stroke="var(--c-dim)" stroke-width="1.2"/>
+            <line x1="19" y1="40" x2="61" y2="40" stroke="var(--c-dim)" stroke-width="1.2"/>
+          </g>
+        </svg>
+      </div>
+
+    </div><!-- /gear-row -->
+
+    <!-- Rope pull mechanism -->
+    <div class="rope-system" id="rope-system" role="button" tabindex="0"
+         aria-label="Pull rope to boot system">
+      <div class="rope-anchor" aria-hidden="true">
+        <div class="anchor-bracket"></div>
+      </div>
+      <div class="rope-cable" id="rope-cable" aria-hidden="true">
+        <div class="rope-strands"></div>
+      </div>
+      <div class="rope-knob" id="rope-knob" aria-hidden="true">
+        <div class="rk-outer"></div>
+        <div class="rk-inner">
+          <svg viewBox="0 0 20 20" width="14" height="14" fill="none">
+            <path d="M10 3v14M4 11l6 6 6-6" stroke="var(--g)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+      </div>
+      <p class="rope-hint" id="rope-hint">
+        <span aria-hidden="true">↕</span> PULL TO BOOT
+      </p>
+    </div>
+
+    <!-- Hatch panels — split open on activation -->
+    <div class="hatch-wrap" id="hatch-wrap" aria-hidden="true">
+      <div class="hatch-panel hp-top" id="hp-top">
+        <div class="hatch-tex"></div>
+        <div class="hatch-bolts">
+          <span class="bolt"></span><span class="bolt"></span>
+          <span class="bolt"></span><span class="bolt"></span>
+        </div>
+      </div>
+      <div class="hatch-panel hp-bot" id="hp-bot">
+        <div class="hatch-tex"></div>
+        <div class="hatch-bolts">
+          <span class="bolt"></span><span class="bolt"></span>
+          <span class="bolt"></span><span class="bolt"></span>
         </div>
       </div>
     </div>
 
-    <!-- Belt connecting gears -->
-    <svg id="belt-svg" viewBox="0 0 400 200" preserveAspectRatio="none">
-      <defs>
-        <marker id="belt-arrow" markerWidth="6" markerHeight="6" refX="3" refY="3" orient="auto">
-          <polygon points="0 0, 6 3, 0 6" fill="#00ff8866"/>
-        </marker>
-      </defs>
-      <path id="belt-path" d="M 80 100 Q 200 60 320 100 Q 200 140 80 100" fill="none" stroke="#00ff8833" stroke-width="4" stroke-dasharray="8 4"/>
-    </svg>
+    <!-- Name reveal — shown after hatch opens -->
+    <div class="name-reveal" id="name-reveal" aria-live="assertive">
+      <div class="nr-bg-grid" aria-hidden="true"></div>
+      <div class="nr-content">
+        <p class="nr-pre" aria-hidden="true">// IDENTITY CONFIRMED</p>
+        <h1 class="nr-name" id="nr-name">AADITYA<br>GELANI</h1>
+        <p class="nr-role">Engineer &amp; Electronics & Communication</p>
+        <ul class="nr-tags" aria-label="Specializations">
+          <li>Power Systems</li>
+          <li>Semiconductors</li>
+          <li>sensor Processing</li>
+          <li>Embedded</li>
+        </ul>
+        <button class="enter-btn" id="enter-btn">
+          <span aria-hidden="true">[</span> INITIALIZE SYSTEM <span aria-hidden="true">]</span>
+        </button>
+      </div>
+    </div>
 
-  </div><!-- end mech-container -->
+    <!-- Bottom status bar -->
+    <div class="frame-botbar" aria-hidden="true">
+      <span>◆ PORTFOLIO</span>
+      <div class="progress-bar">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+      <span id="boot-pct">0%</span>
+    </div>
 
-  <!-- Power-up flash -->
-  <div id="power-flash"></div>
-</div><!-- end boot-screen -->
+  </div><!-- /system-frame -->
+
+  <div class="power-flash" id="power-flash" aria-hidden="true"></div>
+</div><!-- /boot-screen -->
 
 
-<!-- ============================================================
-     MAIN SITE — all sections
-     ============================================================ -->
-<main id="main-site" class="hidden">
+<!-- ═══════════════════════════════════════════════════════════
+     MAIN SITE
+═══════════════════════════════════════════════════════════ -->
+<div id="main-site" class="hidden" aria-hidden="true">
 
-  <!-- NAV -->
-  <nav id="sys-nav">
-    <div class="nav-logo">AG<span class="nav-dot">.</span></div>
-    <ul class="nav-links">
-      <li><a href="#about" data-label="PWR">ABOUT</a></li>
-      <li><a href="#skills" data-label="CPU">SKILLS</a></li>
-      <li><a href="#logic" data-label="NAND">LOGIC</a></li>
-      <li><a href="#projects" data-label="IC">PROJECTS</a></li>
-      <li><a href="#research" data-label="LAB">RESEARCH</a></li>
-      <li><a href="#contact" data-label="OUT">CONTACT</a></li>
-    </ul>
-    <div class="nav-signal">
-      <span class="signal-dot"></span>
-      <span class="signal-label">LIVE</span>
+  <div class="scanlines" aria-hidden="true"></div>
+
+  <!-- Navigation -->
+  <nav id="sys-nav" aria-label="Site navigation">
+    <div class="nav-inner">
+      <a class="nav-logo" href="#hero" aria-label="Aaditya Gelani — Home">
+        AG<span>.</span>
+      </a>
+      <button class="nav-burger" id="nav-burger"
+              aria-label="Toggle navigation" aria-expanded="false"
+              aria-controls="nav-menu">
+        <span></span><span></span><span></span>
+      </button>
+      <ul class="nav-menu" id="nav-menu" role="list">
+        <li><a href="#hero"     class="nlink">ABOUT</a></li>
+        <li><a href="#skills"   class="nlink">SKILLS</a></li>
+        <li><a href="#logic"    class="nlink">LOGIC</a></li>
+        <li><a href="#projects" class="nlink">PROJECTS</a></li>
+        <li><a href="#research" class="nlink">RESEARCH</a></li>
+        <li><a href="#contact"  class="nlink">CONTACT</a></li>
+      </ul>
+      <div class="nav-live" aria-hidden="true">
+        <span class="live-dot"></span><span>LIVE</span>
+      </div>
     </div>
   </nav>
 
-  <!-- MAIN CIRCUIT BUS — runs the full page height -->
-  <svg id="circuit-bus" aria-hidden="true">
-    <defs>
-      <filter id="glow-filter">
-        <feGaussianBlur stdDeviation="3" result="blur"/>
-        <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
-      </filter>
-    </defs>
-    <!-- Main vertical bus line -->
-    <line id="bus-line" x1="40" y1="0" x2="40" y2="100%" stroke="#00ff8822" stroke-width="2"/>
-    <!-- Signal particle -->
-    <circle id="signal-particle" cx="40" cy="0" r="5" fill="#00ff88" filter="url(#glow-filter)" opacity="0"/>
-  </svg>
+  <!-- Left decorative circuit bus -->
+  <div class="circuit-bus" aria-hidden="true">
+    <div class="cb-track"></div>
+    <div class="cb-dot" id="cb-dot"></div>
+  </div>
 
-  <!-- =====================================================
-       SECTION 1 — POWER SUPPLY (ABOUT)
-       ===================================================== -->
-  <section id="about" class="sys-section">
-    <div class="section-header">
-      <div class="sec-badge">PWR_SUPPLY</div>
-      <h2 class="sec-title">ABOUT <span class="accent">// AADITYA</span></h2>
-      <div class="sec-line"></div>
-    </div>
+  <!-- ─────────────────────────────────
+       HERO / ABOUT
+  ───────────────────────────────── -->
+  <section id="hero" class="sec">
+    <div class="sec-inner">
+      <p class="sec-badge">PWR_SUPPLY::ABOUT</p>
+      <h2 class="sec-title">ABOUT <span class="ac">AADITYA</span></h2>
+      <div class="sec-rule"></div>
 
-    <div class="about-grid">
-      <div class="about-card">
-        <div class="card-corner tl"></div>
-        <div class="card-corner tr"></div>
-        <div class="card-corner bl"></div>
-        <div class="card-corner br"></div>
-        <div class="about-avatar">
-          <div class="avatar-ring ring1"></div>
-          <div class="avatar-ring ring2"></div>
-          <div class="avatar-core">
-            <span class="avatar-initials">AG</span>
+      <div class="hero-grid">
+
+        <!-- Profile card -->
+        <div class="profile-card reveal" aria-label="Profile">
+          <div class="pc-ring r1" aria-hidden="true"></div>
+          <div class="pc-ring r2" aria-hidden="true"></div>
+          <div class="pc-orbit" aria-hidden="true"><div class="pc-orbit-node"></div></div>
+          <div class="pc-img-wrap">
+            <!-- REPLACE with your real image path -->
+            <img
+              src="https://api.dicebear.com/9.x/identicon/svg?seed=AadityaGelani&backgroundColor=0a1a0a"
+              alt="Aaditya Gelani"
+              class="pc-img"
+              loading="lazy"
+              width="160" height="160"/>
+            <div class="pc-initials" aria-hidden="true">AG</div>
+          </div>
+          <p class="pc-name">Aaditya Gelani</p>
+          <p class="pc-role">ECE  &amp; Developer</p>
+          <div class="pc-status">
+            <span class="pcs-dot" aria-hidden="true"></span>
+            Open to opportunities
           </div>
         </div>
-        <div class="about-text">
-          <p class="about-para">
-            B.Tech Electronics &amp; Communication Engineering student with a passion for building systems that bridge the gap between hardware and intelligence. Specializing in PCBs, semiconductors, and power systems.
+
+        <!-- About text block -->
+        <div class="about-block reveal">
+          <p class="about-p">
+            B.Tech Electronics &amp; Communication Engineering student passionate about building systems where hardware meets intelligence. Specializing in PCBs, semiconductors, and Embedded systems.
           </p>
-          <p class="about-para">
-            Currently exploring signal processing, integration of High and low power, and low-power wireless protocols. Every circuit tells a story, mine is still being written.
+          <p class="about-p">
+            Currently exploring signal processing pipelines, FPGA development, and low-power wireless protocols. Every circuit tells a story — mine is still being written.
           </p>
-          <div class="about-stats">
+
+          <dl class="about-stats">
             <!-- UPDATE_STATS_HERE -->
-            <div class="stat-block">
-              <span class="stat-num">2</span>
-              <span class="stat-label">Projects</span>
+            <div class="stat">
+              <dt class="stat-l">Projects</dt>
+              <dd class="stat-n">2</dd>
             </div>
-            <div class="stat-block">
-              <span class="stat-num">1</span>
-              <span class="stat-label">Research Paper(s)</span>
+            <div class="stat-sep" aria-hidden="true"></div>
+            <div class="stat">
+              <dt class="stat-l">Papers</dt>
+              <dd class="stat-n">1</dd>
             </div>
-            <div class="stat-block">
-              <span class="stat-num">ECE</span>
-              <span class="stat-label">Specialization</span>
+            <div class="stat-sep" aria-hidden="true"></div>
+            <div class="stat">
+              <dt class="stat-l">Domain</dt>
+              <dd class="stat-n">ECE</dd>
             </div>
-          </div>
-        </div>
-      </div>
+          </dl>
 
-      <!-- PCB trace decoration -->
-      <svg class="pcb-deco" viewBox="0 0 200 300" aria-hidden="true">
-        <path class="trace" d="M 20 20 L 20 100 L 80 100 L 80 150 L 160 150" fill="none" stroke="#00ff8844" stroke-width="1.5"/>
-        <path class="trace" d="M 20 60 L 60 60 L 60 200 L 140 200" fill="none" stroke="#00ccff33" stroke-width="1.5"/>
-        <circle cx="80" cy="100" r="4" fill="none" stroke="#00ff88" stroke-width="1.5" class="node"/>
-        <circle cx="60" cy="200" r="4" fill="none" stroke="#00ccff" stroke-width="1.5" class="node"/>
-        <circle cx="160" cy="150" r="3" fill="#00ff88" class="node-fill"/>
-        <circle cx="140" cy="200" r="3" fill="#00ccff" class="node-fill"/>
-      </svg>
-    </div>
-  </section>
-
-  <!-- =====================================================
-       SECTION 2 — PROCESSING UNIT (SKILLS)
-       ===================================================== -->
-  <section id="skills" class="sys-section">
-    <div class="section-header">
-      <div class="sec-badge">PROC_UNIT</div>
-      <h2 class="sec-title">SKILLS <span class="accent">// CAPABILITIES</span></h2>
-      <div class="sec-line"></div>
-    </div>
-
-    <!-- UPDATE_SKILLS_HERE -->
-    <div class="skills-grid">
-
-      <div class="skill-module" data-domain="Hardware">
-        <div class="skill-module-header">
-          <span class="skill-icon">⬡</span>
-          <span class="skill-domain">Hardware Design</span>
-        </div>
-        <div class="skill-list">
-          <div class="skill-item" data-level="88">
-            <span class="skill-name">PCB Design (KiCad)</span>
-            <div class="skill-bar"><div class="skill-fill" data-pct="88"></div></div>
-          </div>
-          <div class="skill-item" data-level="82">
-            <span class="skill-name">3D - Design (CAD)</span>
-            <div class="skill-bar"><div class="skill-fill" data-pct="82"></div></div>
-          </div>
-          <div class="skill-item" data-level="75">
-            <span class="skill-name">UPDI programming</span>
-            <div class="skill-bar"><div class="skill-fill" data-pct="75"></div></div>
-          </div>
-          <div class="skill-item" data-level="70">
-            <span class="skill-name">FPGA (Verilog)</span>
-            <div class="skill-bar"><div class="skill-fill" data-pct="70"></div></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="skill-module" data-domain="Embedded">
-        <div class="skill-module-header">
-          <span class="skill-icon">⬡</span>
-          <span class="skill-domain">Embedded Systems</span>
-        </div>
-        <div class="skill-list">
-          <div class="skill-item" data-level="90">
-            <span class="skill-name">Arduino / ESP32</span>
-            <div class="skill-bar"><div class="skill-fill" data-pct="85"></div></div>
-          </div>
-          <div class="skill-item" data-level="80">
-            <span class="skill-name">ARM Cortex-M (STM32)(Learning)</span>
-            <div class="skill-bar"><div class="skill-fill" data-pct="70"></div></div>
-          </div>
-          <div class="skill-item" data-level="72">
-            <span class="skill-name">Raspberry Pi / Linux(Learning)</span>
-            <div class="skill-bar"><div class="skill-fill" data-pct="60"></div></div>
-          </div>
-          <div class="skill-item" data-level="68">
-            <span class="skill-name">RTOS / FreeRTOS(Learning)</span>
-            <div class="skill-bar"><div class="skill-fill" data-pct="68"></div></div>
-          </div>
-        </div>
-      </div>
-
-      <div class="skill-module" data-domain="Software">
-        <div class="skill-module-header">
-          <span class="skill-icon">⬡</span>
-          <span class="skill-domain">Software & DSP</span>
-        </div>
-        <div class="skill-list">
-          <div class="skill-item" data-level="85">
-            <span class="skill-name">Python</span>
-            <div class="skill-bar"><div class="skill-fill" data-pct="85"></div></div>
-          </div>
-          <div class="skill-item" data-level="78">
-            <span class="skill-name">JAVA</span>
-            <div class="skill-bar"><div class="skill-fill" data-pct="78"></div></div>
-          </div>
-          <div class="skill-item" data-level="65">
-            <span class="skill-name">C</span>
-            <div class="skill-bar"><div class="skill-fill" data-pct="65"></div></div>
-          </div>
-          <div class="skill-item" data-level="60">
-            <span class="skill-name">Frontend development</span>
-            <div class="skill-bar"><div class="skill-fill" data-pct="60"></div></div>
-          </div>
-        </div>
-      </div>
-
-    </div>
-  </section>
-
-  <!-- =====================================================
-       SECTION 3 — LOGIC SIMULATION (NAND GATE)
-       ===================================================== -->
-  <section id="logic" class="sys-section">
-    <div class="section-header">
-      <div class="sec-badge">LOGIC_SIM</div>
-      <h2 class="sec-title">LOGIC <span class="accent">// NAND SIMULATION</span></h2>
-      <div class="sec-line"></div>
-    </div>
-
-    <div class="logic-container">
-      <div class="logic-panel">
-        <div class="logic-inputs">
-          <div class="logic-input-row">
-            <span class="input-label">INPUT A</span>
-            <button class="logic-toggle" id="inputA" data-state="0">
-              <span class="toggle-state">LOW</span>
-            </button>
-            <div class="wire wire-a" id="wire-a"></div>
-          </div>
-          <div class="logic-input-row">
-            <span class="input-label">INPUT B</span>
-            <button class="logic-toggle" id="inputB" data-state="0">
-              <span class="toggle-state">LOW</span>
-            </button>
-            <div class="wire wire-b" id="wire-b"></div>
-          </div>
-        </div>
-
-        <!-- NAND Gate SVG -->
-        <div class="gate-container">
-          <svg id="nand-gate-svg" viewBox="0 0 180 120" width="180" height="120">
-            <!-- Gate body -->
-            <path id="gate-body" d="M 20 20 L 20 100 L 80 100 Q 140 100 140 60 Q 140 20 80 20 Z" 
-                  fill="#0a1a0a" stroke="#00ff88" stroke-width="2"/>
-            <!-- NOT bubble -->
-            <circle id="gate-bubble" cx="150" cy="60" r="10" fill="#0a1a0a" stroke="#00ff88" stroke-width="2"/>
-            <!-- Input lines -->
-            <line x1="0" y1="40" x2="20" y2="40" stroke="#00ff88" stroke-width="2" id="in-line-a"/>
-            <line x1="0" y1="80" x2="20" y2="80" stroke="#00ff88" stroke-width="2" id="in-line-b"/>
-            <!-- Output line -->
-            <line x1="160" y1="60" x2="180" y2="60" stroke="#00ff88" stroke-width="2" id="out-line"/>
-            <!-- Label -->
-            <text x="65" y="65" fill="#00ff88" font-size="14" font-family="'Share Tech Mono'" text-anchor="middle">NAND</text>
-            <!-- Signal particles in gate -->
-            <circle class="gate-particle" cx="0" cy="40" r="3" fill="#00ff88" opacity="0"/>
-            <circle class="gate-particle" cx="0" cy="80" r="3" fill="#00ff88" opacity="0"/>
+          <svg class="trace-strip" viewBox="0 0 300 32" aria-hidden="true">
+            <path d="M0 16 H50 V6 H110 V26 H190 V16 H300"
+                  fill="none" stroke="var(--g-dim)" stroke-width="1.5"
+                  class="trace-path"/>
+            <circle cx="50"  cy="16" r="3.5" fill="none" stroke="var(--g)" stroke-width="1.5"/>
+            <circle cx="110" cy="16" r="3.5" fill="none" stroke="var(--g)" stroke-width="1.5"/>
+            <circle cx="190" cy="16" r="3.5" fill="none" stroke="var(--g)" stroke-width="1.5"/>
           </svg>
         </div>
 
-        <div class="logic-output">
-          <div class="output-label">OUTPUT Q</div>
-          <div class="output-led" id="output-led">
-            <div class="led-inner"></div>
-          </div>
-          <div class="output-value" id="output-value">HIGH</div>
-        </div>
-      </div>
-
-      <!-- Truth Table -->
-      <div class="truth-table-container">
-        <div class="tt-label">TRUTH TABLE — NAND</div>
-        <table class="truth-table">
-          <thead>
-            <tr><th>A</th><th>B</th><th>Q</th></tr>
-          </thead>
-          <tbody>
-            <tr class="tt-row" data-a="0" data-b="0"><td>0</td><td>0</td><td>1</td></tr>
-            <tr class="tt-row" data-a="0" data-b="1"><td>0</td><td>1</td><td>1</td></tr>
-            <tr class="tt-row" data-a="1" data-b="0"><td>1</td><td>0</td><td>1</td></tr>
-            <tr class="tt-row" data-a="1" data-b="1"><td>1</td><td>1</td><td>0</td></tr>
-          </tbody>
-        </table>
-        <div class="tt-note">// Click inputs to toggle logic states</div>
       </div>
     </div>
   </section>
 
-  <!-- =====================================================
-       SECTION 4 — COMPONENT BANK (PROJECTS)
-       ===================================================== -->
-  <section id="projects" class="sys-section">
-    <div class="section-header">
-      <div class="sec-badge">COMP_BANK</div>
-      <h2 class="sec-title">PROJECTS <span class="accent">// IC MODULES</span></h2>
-      <div class="sec-line"></div>
-    </div>
+  <!-- ─────────────────────────────────
+       SKILLS
+  ───────────────────────────────── -->
+  <section id="skills" class="sec">
+    <div class="sec-inner">
+      <p class="sec-badge">PROC_UNIT::SKILLS</p>
+      <h2 class="sec-title">SKILLS <span class="ac">CAPABILITIES</span></h2>
+      <div class="sec-rule"></div>
 
-    <div class="projects-grid" id="projects-grid">
+      <!-- UPDATE_SKILLS_HERE -->
+      <div class="skills-grid">
 
-      <!-- ADD_NEW_PROJECT_HERE — copy one .ic-card block and update content -->
-
-      <div class="ic-card" data-project="0">
-        <div class="ic-body">
-          <div class="ic-pins left">
-            <div class="pin" data-pin="VCC"></div>
-            <div class="pin" data-pin="GND"></div>
-            <div class="pin" data-pin="CLK"></div>
-            <div class="pin" data-pin="RST"></div>
+        <div class="skill-mod reveal">
+          <div class="skm-head">
+            <span aria-hidden="true">⬡</span> Hardware Design
           </div>
-          <div class="ic-center">
-            <div class="ic-notch"></div>
-            <div class="ic-label">IC_001</div>
-            <div class="ic-name">DermaVisage</div>
-            <div class="ic-tech">
-              <span class="tech-tag">KiCAD</span>
-              <span class="tech-tag">UPDI</span>
-              <span class="tech-tag">NFC</span>
-            </div>
-            <div class="ic-glow-ring"></div>
-          </div>
-          <div class="ic-pins right">
-            <div class="pin" data-pin="OUT"></div>
-            <div class="pin" data-pin="EN"></div>
-            <div class="pin" data-pin="INT"></div>
-            <div class="pin" data-pin="PWR"></div>
-          </div>
+          <ul class="skm-list">
+            <li><span class="skn">PCB Design (KiCad)</span>
+              <div class="skbar"><div class="skfill" data-pct="88"></div></div></li>
+            <li><span class="skn">3D - Design (CAD)</span>
+              <div class="skbar"><div class="skfill" data-pct="82"></div></div></li>
+            <li><span class="skn">UPDI programming</span>
+              <div class="skbar"><div class="skfill" data-pct="75"></div></div></li>
+            <li><span class="skn">FPGA (Verilog/VHDL)</span>
+              <div class="skbar"><div class="skfill" data-pct="70"></div></div></li>
+          </ul>
         </div>
-        <div class="ic-expand" id="project-detail-0">
-          <div class="detail-header">
-            <span class="detail-id">IC_001 // DermaVisage</span>
-            <button class="detail-close">✕</button>
+
+        <div class="skill-mod reveal">
+          <div class="skm-head">
+            <span aria-hidden="true">⬡</span> Embedded Systems
           </div>
-          <div class="detail-body">
-            <p class="detail-desc">
+          <ul class="skm-list">
+            <li><span class="skn">Arduino / ESP32</span>
+              <div class="skbar"><div class="skfill" data-pct="85"></div></div></li>
+            <li><span class="skn">ARM Cortex-M (STM32) (Learning)</span>
+              <div class="skbar"><div class="skfill" data-pct="70"></div></div></li>
+            <li><span class="skn">Raspberry Pi / Linux (Learning)</span>
+              <div class="skbar"><div class="skfill" data-pct="60"></div></div></li>
+            <li><span class="skn">RTOS / FreeRTOS (Learning)</span>
+              <div class="skbar"><div class="skfill" data-pct="68"></div></div></li>
+          </ul>
+        </div>
+
+        <div class="skill-mod reveal">
+          <div class="skm-head">
+            <span aria-hidden="true">⬡</span> Software &amp; DSP
+          </div>
+          <ul class="skm-list">
+            <li><span class="skn">Python</span>
+              <div class="skbar"><div class="skfill" data-pct="85"></div></div></li>
+            <li><span class="skn">JAVA</span>
+              <div class="skbar"><div class="skfill" data-pct="78"></div></div></li>
+            <li><span class="skn">C / C++ Embedded (Learning)</span>
+              <div class="skbar"><div class="skfill" data-pct="65"></div></div></li>
+            <li><span class="skn">Frontend development</span>
+              <div class="skbar"><div class="skfill" data-pct="60"></div></div></li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────────────
+       LOGIC SIMULATION
+  ───────────────────────────────── -->
+  <section id="logic" class="sec">
+    <div class="sec-inner">
+      <p class="sec-badge">LOGIC_SIM::NAND</p>
+      <h2 class="sec-title">LOGIC <span class="ac">SIMULATION</span></h2>
+      <div class="sec-rule"></div>
+
+      <div class="logic-layout">
+        <div class="logic-panel reveal">
+
+          <div class="lp-inputs">
+            <div class="lp-row">
+              <span class="lp-lbl">A</span>
+              <button class="lp-tog" id="inputA" data-state="0" aria-pressed="false">
+                <span class="tog-track"><span class="tog-thumb"></span></span>
+                <span class="tog-val">LOW</span>
+              </button>
+              <div class="lp-wire" id="wire-a"><div class="lw-fill"></div></div>
+            </div>
+            <div class="lp-row">
+              <span class="lp-lbl">B</span>
+              <button class="lp-tog" id="inputB" data-state="0" aria-pressed="false">
+                <span class="tog-track"><span class="tog-thumb"></span></span>
+                <span class="tog-val">LOW</span>
+              </button>
+              <div class="lp-wire" id="wire-b"><div class="lw-fill"></div></div>
+            </div>
+          </div>
+
+          <div class="lp-gate" aria-hidden="true">
+            <svg id="nand-svg" viewBox="0 0 160 110" width="160" height="110">
+              <path id="gate-body"
+                d="M18 18 L18 92 L72 92 Q128 92 128 55 Q128 18 72 18 Z"
+                fill="#060e06" stroke="var(--g)" stroke-width="2"/>
+              <circle id="gate-bubble" cx="138" cy="55" r="9"
+                fill="#060e06" stroke="var(--g)" stroke-width="2"/>
+              <line x1="0"   y1="38" x2="18"  y2="38" stroke="var(--g)" stroke-width="2" id="il-a"/>
+              <line x1="0"   y1="72" x2="18"  y2="72" stroke="var(--g)" stroke-width="2" id="il-b"/>
+              <line x1="147" y1="55" x2="160" y2="55" stroke="var(--g)" stroke-width="2" id="ol"/>
+              <text x="63" y="60" fill="var(--g)" font-size="11"
+                    font-family="'Share Tech Mono'" text-anchor="middle" opacity=".8">NAND</text>
+            </svg>
+          </div>
+
+          <div class="lp-out" role="status" aria-label="Gate output">
+            <span class="lo-lbl">Q</span>
+            <div class="lo-led" id="output-led">
+              <div class="lo-core"></div>
+              <div class="lo-halo"></div>
+            </div>
+            <span class="lo-val" id="output-val">HIGH</span>
+          </div>
+
+        </div>
+
+        <div class="truth-wrap reveal">
+          <p class="tt-head">TRUTH TABLE</p>
+          <table class="truth-table">
+            <thead><tr><th>A</th><th>B</th><th>Q</th></tr></thead>
+            <tbody>
+              <tr class="tt-r" data-a="0" data-b="0"><td>0</td><td>0</td><td>1</td></tr>
+              <tr class="tt-r" data-a="0" data-b="1"><td>0</td><td>1</td><td>1</td></tr>
+              <tr class="tt-r" data-a="1" data-b="0"><td>1</td><td>0</td><td>1</td></tr>
+              <tr class="tt-r" data-a="1" data-b="1"><td>1</td><td>1</td><td>0</td></tr>
+            </tbody>
+          </table>
+          <p class="tt-note">// Click inputs to toggle states</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ─────────────────────────────────
+       PROJECTS
+  ───────────────────────────────── -->
+  <section id="projects" class="sec">
+    <div class="sec-inner">
+      <p class="sec-badge">COMP_BANK::IC_MODULES</p>
+      <h2 class="sec-title">PROJECTS <span class="ac">IC BANK</span></h2>
+      <div class="sec-rule"></div>
+
+      <div class="ic-grid">
+
+        <!-- ADD_NEW_PROJECT_HERE — copy one ic-card block -->
+
+        <div class="ic-card reveal">
+          <div class="ic-body">
+            <div class="ic-pins lp" aria-hidden="true">
+              <span class="pin" data-l="VCC"></span><span class="pin" data-l="GND"></span>
+              <span class="pin" data-l="CLK"></span><span class="pin" data-l="RST"></span>
+            </div>
+            <div class="ic-mid">
+              <div class="ic-notch" aria-hidden="true"></div>
+              <p class="ic-ref">IC — 001</p>
+              <h3 class="ic-name">DermaVisage<br>Patch</h3>
+              <div class="ic-tags">
+                <span>KiCAD</span><span>UPDI</span><span>NFC</span>
+              </div>
+              <p class="ic-hint">TAP TO EXPAND</p>
+            </div>
+            <div class="ic-pins rp" aria-hidden="true">
+              <span class="pin" data-l="OUT"></span><span class="pin" data-l="EN"></span>
+              <span class="pin" data-l="INT"></span><span class="pin" data-l="PWR"></span>
+            </div>
+          </div>
+          <div class="ic-detail">
+            <div class="icd-bar">
+              <span>IC_001 // DermaVisage</span>
+              <button class="icd-x" aria-label="Close">✕</button>
+            </div>
+            <p class="icd-desc">
               Built an NFC-powered, single-use dermal analysis patch featuring a custom 30mm circular PCB, ATTiny MCU, on-skin sensor electrodes, and smartphone-triggered data readout via web interface. 
             </p>
-            <div class="detail-stack">
-              <span class="stack-label">STACK:</span>
-              <span class="tech-tag">KiCAD</span>
-              <span class="tech-tag">UPDI (ATTiny202)</span>
-              <span class="tech-tag">NFC(STV25)</span>
+            <div class="icd-stack">
+              <span>KiCAD</span><span>UPDI (ATTiny202)</span><span>NFC(STV25)</span>
             </div>
-            <div class="detail-links">
-              <a href="#" class="detail-link github-link">[ GitHub ]</a>
-              <a href="#" class="detail-link demo-link">[ Demo ]</a>
+            <div class="icd-links">
+              <a href="#" class="icd-a">[ GitHub ]</a>
+              <a href="#" class="icd-a demo">[ Demo ]</a>
             </div>
           </div>
         </div>
-      </div>
 
-      <div class="ic-card" data-project="1">
-        <div class="ic-body">
-          <div class="ic-pins left">
-            <div class="pin" data-pin="VCC"></div>
-            <div class="pin" data-pin="GND"></div>
-            <div class="pin" data-pin="SDA"></div>
-            <div class="pin" data-pin="SCL"></div>
-          </div>
-          <div class="ic-center">
-            <div class="ic-notch"></div>
-            <div class="ic-label">IC_002</div>
-            <div class="ic-name">CrackCellA</div>
-            <div class="ic-tech">
-              <span class="tech-tag">ESP32</span>
-              <span class="tech-tag">KiCAD</span>
-              <span class="tech-tag">AutoFusion</span>
+        <div class="ic-card reveal">
+          <div class="ic-body">
+            <div class="ic-pins lp" aria-hidden="true">
+              <span class="pin" data-l="VCC"></span><span class="pin" data-l="GND"></span>
+              <span class="pin" data-l="SDA"></span><span class="pin" data-l="SCL"></span>
             </div>
-            <div class="ic-glow-ring"></div>
+            <div class="ic-mid">
+              <div class="ic-notch" aria-hidden="true"></div>
+              <p class="ic-ref">IC — 002</p>
+              <h3 class="ic-name">CrackCellA<br>Device</h3>
+              <div class="ic-tags">
+                <span>ESP32</span><span>KiCAD</span><span>AutoFusion</span>
+              </div>
+              <p class="ic-hint">TAP TO EXPAND</p>
+            </div>
+            <div class="ic-pins rp" aria-hidden="true">
+              <span class="pin" data-l="TX"></span><span class="pin" data-l="RX"></span>
+              <span class="pin" data-l="ADC"></span><span class="pin" data-l="PWM"></span>
+            </div>
           </div>
-          <div class="ic-pins right">
-            <div class="pin" data-pin="TX"></div>
-            <div class="pin" data-pin="RX"></div>
-            <div class="pin" data-pin="ADC"></div>
-            <div class="pin" data-pin="PWM"></div>
-          </div>
-        </div>
-        <div class="ic-expand" id="project-detail-1">
-          <div class="detail-header">
-            <span class="detail-id">IC_002 // CrackCellA</span>
-            <button class="detail-close">✕</button>
-          </div>
-          <div class="detail-body">
-            <p class="detail-desc">
-              Developed an ESP32-based battery analyzer implementing high-side Kelvin current sensing and MOSFET-controlled load profiling. 
+          <div class="ic-detail">
+            <div class="icd-bar">
+              <span>IC_002 // CrackCellA</span>
+              <button class="icd-x" aria-label="Close">✕</button>
+            </div>
+            <p class="icd-desc">
+              Developed an ESP32-based battery analyzer implementing high-side Kelvin current sensing and MOSFET-controlled load profiling.
             </p>
-            <div class="detail-stack">
-              <span class="stack-label">STACK:</span>
-              <span class="tech-tag">ESP32</span>
-              <span class="tech-tag">Power Management</span>
-              <span class="tech-tag">KiCAD</span>
-              <span class="tech-tag">AutoFusion</span>
+            <div class="icd-stack">
+              <span>ESP32</span><span>Power Management</span><span>KiCAD</span><span>AutoFusion</span>
             </div>
-            <div class="detail-links">
-              <a href="#" class="detail-link github-link">[ GitHub ]</a>
-              <a href="#" class="detail-link demo-link">[ Demo ]</a>
+            <div class="icd-links">
+              <a href="#" class="icd-a">[ GitHub ]</a>
+              <a href="#" class="icd-a demo">[ Demo ]</a>
             </div>
           </div>
         </div>
       </div>
-
-      
-    </div><!-- end projects-grid -->
+    </div>
   </section>
 
-  <!-- =====================================================
-       SECTION 5 — RESEARCH LAB
-       ===================================================== -->
-  <section id="research" class="sys-section">
-    <div class="section-header">
-      <div class="sec-badge">RESEARCH_LAB</div>
-      <h2 class="sec-title">RESEARCH <span class="accent">// PUBLICATIONS</span></h2>
-      <div class="sec-line"></div>
-    </div>
+  <!-- ─────────────────────────────────
+       RESEARCH
+  ───────────────────────────────── -->
+  <section id="research" class="sec">
+    <div class="sec-inner">
+      <p class="sec-badge">RESEARCH_LAB::PAPERS</p>
+      <h2 class="sec-title">RESEARCH <span class="ac">PUBLICATIONS</span></h2>
+      <div class="sec-rule"></div>
 
-    <div class="research-list" id="research-list">
+      <div class="rp-list">
 
-      <!-- ADD_NEW_RESEARCH_HERE — copy one .research-item block and update content -->
+        <!-- ADD_NEW_RESEARCH_HERE — copy one rp-item block -->
 
-      <div class="research-item">
-        <div class="research-header" onclick="toggleResearch(this)">
-          <div class="research-meta">
-            <span class="research-id">PAPER_01</span>
-            <span class="research-year">currently working</span>
-          </div>
-          <h3 class="research-title">Impact of Parasitic Inductance Distribution (Not Magnitude) on Switching Transient and EMI in 3-Phased SiC Inverter Modules </h3>
-          <div class="research-expand-icon">+</div>
-        </div>
-        <div class="research-body collapsed">
-          <p class="research-abstract">
-            <strong>Abstract:</strong> Developing a distribution-aware parasitic inductance model to analyze switching transients and EMI in 3-phase SiC inverter modules. 
-          </p>
-          <div class="research-actions">
-            <a href="#" class="detail-link">[ View PDF ]</a>
-            <a href="#" class="detail-link">[ DOI Link ]</a>
+        <div class="rp-item reveal">
+          <button class="rp-head" aria-expanded="false">
+            <div class="rp-meta"><span class="rp-id">PAPER_01</span><span class="rp-yr">currently working</span></div>
+            <h3 class="rp-title">Impact of Parasitic Inductance Distribution (Not Magnitude) on Switching Transient and EMI in 3-Phased SiC Inverter Modules</h3>
+            <span class="rp-icon" aria-hidden="true">+</span>
+          </button>
+          <div class="rp-body">
+            <p class="rp-abs">
+              <strong>Abstract:</strong> Developing a distribution-aware parasitic inductance model to analyze switching transients and EMI in 3-phase SiC inverter modules.
+            </p>
+            <div class="rp-links">
+              <a href="#" class="icd-a">[ PDF ]</a>
+              <a href="#" class="icd-a">[ DOI ]</a>
+            </div>
           </div>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- =====================================================
-       SECTION 6 — OUTPUT TERMINAL (CONTACT)
-       ===================================================== -->
-  <section id="contact" class="sys-section">
-    <div class="section-header">
-      <div class="sec-badge">OUTPUT_TERMINAL</div>
-      <h2 class="sec-title">CONTACT <span class="accent">// TRANSMIT</span></h2>
-      <div class="sec-line"></div>
-    </div>
+  <!-- ─────────────────────────────────
+       CONTACT
+  ───────────────────────────────── -->
+  <section id="contact" class="sec">
+    <div class="sec-inner">
+      <p class="sec-badge">OUTPUT_TERMINAL::TX</p>
+      <h2 class="sec-title">CONTACT <span class="ac">TRANSMIT</span></h2>
+      <div class="sec-rule"></div>
 
-    <div class="contact-container">
-      <div class="terminal-window">
-        <div class="terminal-bar">
-          <span class="t-dot red"></span>
-          <span class="t-dot yellow"></span>
-          <span class="t-dot green"></span>
-          <span class="t-title">contact_terminal.sh</span>
+      <div class="terminal reveal">
+        <div class="term-bar" aria-hidden="true">
+          <span class="td r"></span><span class="td y"></span><span class="td g"></span>
+          <span class="term-title">contact_terminal.sh</span>
         </div>
-        <div class="terminal-body">
-          <div class="terminal-line"><span class="t-prompt">$</span> <span class="t-cmd">./connect --user aaditya</span></div>
-          <div class="terminal-line"><span class="t-output">// Establishing secure channel...</span></div>
-          <div class="terminal-line"><span class="t-output">// Signal strength: ████████░░ 80%</span></div>
-          <div class="terminal-line"><span class="t-output">// Ready to receive transmission.</span></div>
-          <div class="terminal-line t-blank"></div>
-          <div class="contact-links">
-            <a href="mailto:aadityagelani1@gmail.com" class="contact-link">
-              <span class="cl-icon">✉</span>
-              <span class="cl-label">EMAIL</span>
-              <span class="cl-val">aadityagelani1@gmail.com</span>
+        <div class="term-body">
+          <p class="tl"><span class="tp">$</span><span class="tc"> ./connect --user aaditya</span></p>
+          <p class="tl to">// Establishing secure channel…</p>
+          <p class="tl to">// Signal strength: <span class="tsbar">████████░░</span> 80%</p>
+          <p class="tl to">// Ready to receive transmission.</p>
+          <div class="term-links">
+            <a href="mailto:aadityagelani1@gmail.com" class="tli">
+              <span class="tli-icon" aria-hidden="true">✉</span>
+              <span class="tli-key">EMAIL</span>
+              <span class="tli-val">aadityagelani1@gmail.com</span>
             </a>
-            <a href="https://www.linkedin.com/in/aaditya-gelani-1586ba1b8/" target="_blank" class="contact-link">
-              <span class="cl-icon">in</span>
-              <span class="cl-label">LINKEDIN</span>
-              <span class="cl-val">/in/aadityagelani</span>
+            <a href="https://www.linkedin.com/in/aaditya-gelani-1586ba1b8/" target="_blank" rel="noopener" class="tli">
+              <span class="tli-icon" aria-hidden="true">in</span>
+              <span class="tli-key">LINKEDIN</span>
+              <span class="tli-val">/in/aadityagelani</span>
             </a>
-            <a href="https://github.com/aadigelani" target="_blank" class="contact-link">
-              <span class="cl-icon">⌥</span>
-              <span class="cl-label">GITHUB</span>
-              <span class="cl-val">aadigelani</span>
+            <a href="https://github.com/aadigelani" target="_blank" rel="noopener" class="tli">
+              <span class="tli-icon" aria-hidden="true">⌥</span>
+              <span class="tli-key">GITHUB</span>
+              <span class="tli-val">aadigelani</span>
             </a>
           </div>
-          <div class="terminal-line t-blank"></div>
-          <div class="terminal-line t-cursor"><span class="t-prompt">$</span> <span class="cursor-blink">█</span></div>
+          <p class="tl" aria-hidden="true"><span class="tp">$</span><span class="tcursor"> █</span></p>
         </div>
       </div>
     </div>
   </section>
 
-  <!-- Footer -->
   <footer id="sys-footer">
-    <div class="footer-pcb"></div>
-    <div class="footer-text">
+    <div class="footer-pcb" aria-hidden="true"></div>
+    <p class="footer-txt">
       <span>AADITYA GELANI</span>
-      <span class="footer-sep">◆</span>
+      <span aria-hidden="true">◆</span>
       <span>ECE</span>
-      <span class="footer-sep">◆</span>
-      <span>SYSTEM v1</span>
-    </div>
+      <span aria-hidden="true">◆</span>
+      <span>v2.0.0</span>
+    </p>
   </footer>
 
-</main><!-- end main-site -->
-
-<!-- Project detail overlay -->
-<div id="project-overlay" class="hidden">
-  <div id="overlay-content"></div>
-</div>
+</div><!-- /main-site -->
 
 <script src="script.js"></script>
 </body>
