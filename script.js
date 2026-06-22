@@ -707,7 +707,284 @@ function debounce(fn, ms) {
   let t;
   return (...args) => { clearTimeout(t); t = setTimeout(() => fn(...args), ms); };
 }
+/* ══════════════════════════════════════════════════════════════
+   NEW JS MODULES — Communication Bus + Firmware Library
+   PASTE LOCATION: In script.js, BEFORE the final BOOTSTRAP block
+   (i.e., before the line: document.addEventListener('DOMContentLoaded', ...)
+   ══════════════════════════════════════════════════════════════ */
 
+
+/* ══════════════════════════════════════════════════════════════
+   MODULE: CommBusSystem
+   Handles Communication Bus section animations:
+   - Bus rail draw animation (ScrollTrigger)
+   - Branch trace draw per node (staggered)
+   - Node card reveal (staggered fade+slide)
+   - Hover: signal pulse travels branch trace
+   - Signal dot travels bus rail on section enter
+   ══════════════════════════════════════════════════════════════ */
+const CommBusSystem = (() => {
+
+  function init() {
+    const section   = document.getElementById('comms');
+    const busRail   = document.getElementById('bus-rail');
+    const busTicks  = document.getElementById('bus-ticks');
+    const busPulse  = document.getElementById('bus-pulse');
+    const busNodes  = document.querySelectorAll('.bus-node');
+    if (!section || !busRail) return;
+
+    // ── Position nodes along the bus (left offset) ─────────────
+    // Distribute nodes evenly across the bus spine width
+    _positionNodes(busNodes);
+
+    // ── ScrollTrigger: draw bus rail + reveal nodes ────────────
+    ScrollTrigger.create({
+      trigger: section,
+      start: 'top 65%',
+      once: true,
+      onEnter: () => {
+        // 1. Draw the bus rail
+        gsap.to(busRail, {
+          strokeDashoffset: 0,
+          duration: 1.2,
+          ease: 'power2.out',
+          onComplete: () => {
+            // 2. Show tick marks
+            gsap.to(busTicks, { opacity: 1, duration: .4 });
+            // 3. Send signal pulse across bus
+            _runBusPulse(busPulse);
+          }
+        });
+
+        // 4. Stagger-reveal branch traces + node cards
+        busNodes.forEach((node, i) => {
+          const branchLine = node.querySelector('.branch-line');
+          const card       = node.querySelector('.bus-card');
+
+          setTimeout(() => {
+            // Draw branch trace
+            if (branchLine) {
+              gsap.to(branchLine, {
+                strokeDashoffset: 0,
+                duration: .5,
+                ease: 'power1.out'
+              });
+            }
+            // Fade + slide node card in
+            gsap.to(node, {
+              opacity: 1,
+              y: 0,
+              duration: .5,
+              ease: 'power2.out'
+            });
+          }, 400 + i * 150); // stagger start after rail starts drawing
+        });
+      }
+    });
+
+    // ── Hover: signal pulse from bus → node ─────────────────────
+    busNodes.forEach(node => {
+      node.addEventListener('mouseenter', () => _pulseNode(node));
+      node.addEventListener('focusin',    () => _pulseNode(node));
+    });
+  }
+
+  /* Distribute nodes evenly across the bus container width */
+  function _positionNodes(nodes) {
+    const container = document.getElementById('bus-nodes');
+    if (!container) return;
+
+    const total = nodes.length;
+    nodes.forEach((node, i) => {
+      // percentage offset: evenly distribute, with margins at ends
+      const pct = ((i + 0.5) / total) * 100;
+      node.style.left = `calc(${pct}% - 90px)`; // 90px = half of max-width:180px
+    });
+  }
+
+  /* Animate the signal dot travelling the bus rail */
+  function _runBusPulse(pulse) {
+    if (!pulse) return;
+    const rail = document.getElementById('bus-rail');
+    if (!rail) return;
+
+    const svgEl  = document.getElementById('bus-spine-svg');
+    const svgW   = svgEl ? svgEl.viewBox.baseVal.width : 900; // viewBox width
+
+    gsap.fromTo(pulse,
+      { attr: { cx: 0 }, opacity: 0 },
+      {
+        attr: { cx: svgW },
+        opacity: 1,
+        duration: 1.4,
+        ease: 'power1.inOut',
+        onComplete: () => gsap.to(pulse, { opacity: 0, duration: .3 })
+      }
+    );
+  }
+
+  /* Pulse animation on a single node when hovered */
+  function _pulseNode(node) {
+    // Prevent rapid re-trigger
+    if (node.classList.contains('pulse-active')) return;
+    node.classList.add('pulse-active');
+
+    const branchLine = node.querySelector('.branch-line');
+    if (branchLine) {
+      // Re-animate the trace as a signal flash
+      gsap.fromTo(branchLine,
+        { strokeDashoffset: 60 },
+        {
+          strokeDashoffset: 0,
+          duration: .4,
+          ease: 'power1.out',
+          onComplete: () => {
+            setTimeout(() => node.classList.remove('pulse-active'), 600);
+          }
+        }
+      );
+    } else {
+      setTimeout(() => node.classList.remove('pulse-active'), 600);
+    }
+  }
+
+  return { init };
+})();
+
+
+/* ══════════════════════════════════════════════════════════════
+   MODULE: FirmwareSystem
+   Handles Firmware Library section animations:
+   - Terminal log typing effect on scroll enter
+   - Sequential slot reveal (slide-in from left, staggered)
+   - Progress bar fill per slot
+   - Hover: slot powers up (status: INSTALLED → ACTIVE + LED glow)
+   ══════════════════════════════════════════════════════════════ */
+const FirmwareSystem = (() => {
+
+  // Terminal log messages that cycle during slot installation
+  const LOG_LINES = [
+    '// Scanning firmware library…',
+    '// Verifying checksums…',
+    '// Mounting module rack…',
+    '// Installing SLOT 01…',
+    '// Installing SLOT 02…',
+    '// Installing SLOT 03…',
+    '// Installing SLOT 04…',
+    '// All modules installed. System ready.',
+  ];
+
+  function init() {
+    const section = document.getElementById('firmware');
+    const slots   = document.querySelectorAll('.fw-slot');
+    const logLine = document.getElementById('fw-log-line');
+    if (!section || !slots.length) return;
+
+    // ── Resolve data-version placeholder text ──────────────────
+    // The HTML uses {{ data-version }} as a placeholder string.
+    // Replace it with the actual data attribute value.
+    slots.forEach(slot => {
+      const verEl = slot.querySelector('.fws-ver');
+      if (verEl) verEl.textContent = slot.dataset.version || 'v1.0';
+    });
+
+    // ── ScrollTrigger: sequential slot reveal ──────────────────
+    ScrollTrigger.create({
+      trigger: section,
+      start: 'top 60%',
+      once: true,
+      onEnter: () => {
+        // Start terminal log cycling
+        _cycleLog(logLine);
+
+        // Stagger each slot reveal
+        slots.forEach((slot, i) => {
+          setTimeout(() => {
+            // Animate slot sliding in
+            gsap.to(slot, {
+              opacity: 1,
+              x: 0,
+              duration: .55,
+              ease: 'power2.out'
+            });
+            // Fill progress bar
+            const bar = slot.querySelector('.fws-bar');
+            if (bar) {
+              setTimeout(() => {
+                bar.style.width = '100%';
+              }, 300);
+            }
+          }, i * 180); // stagger
+        });
+      }
+    });
+
+    // ── Hover/Focus: power up slot (INSTALLED → ACTIVE) ────────
+    slots.forEach(slot => {
+      slot.addEventListener('mouseenter', () => _activateSlot(slot));
+      slot.addEventListener('focusin',    () => _activateSlot(slot));
+      slot.addEventListener('mouseleave', () => _deactivateSlot(slot));
+      slot.addEventListener('focusout',   () => _deactivateSlot(slot));
+    });
+  }
+
+  /* Cycle terminal log lines with typewriter cadence */
+  function _cycleLog(el) {
+    if (!el) return;
+    let idx = 0;
+    const step = () => {
+      if (idx >= LOG_LINES.length) return;
+      el.textContent = LOG_LINES[idx++];
+      // Speed up first few lines, slow final line
+      const delay = idx >= LOG_LINES.length ? 1200 : 280;
+      setTimeout(step, delay);
+    };
+    step();
+  }
+
+  /* Power up: switch status label + LED to ACTIVE */
+  function _activateSlot(slot) {
+    slot.classList.add('active');
+    const statusEl = slot.querySelector('.fws-status');
+    const ledEl    = slot.querySelector('.fws-led');
+    if (statusEl) statusEl.textContent = 'ACTIVE';
+    if (ledEl) {
+      ledEl.style.background  = 'var(--g)';
+      ledEl.style.boxShadow   = '0 0 10px var(--g)';
+    }
+  }
+
+  /* Power down: revert status label + LED to INSTALLED */
+  function _deactivateSlot(slot) {
+    slot.classList.remove('active');
+    const statusEl = slot.querySelector('.fws-status');
+    const ledEl    = slot.querySelector('.fws-led');
+    if (statusEl) statusEl.textContent = 'INSTALLED';
+    if (ledEl) {
+      ledEl.style.background  = '';
+      ledEl.style.boxShadow   = '';
+    }
+  }
+
+  return { init };
+})();
+
+
+/* ──────────────────────────────────────────────────────────────
+   INTEGRATION PATCH — add the two new modules to the main
+   ScrollSystem.init() call inside the existing onEnter callback.
+
+   PASTE LOCATION: In script.js, find the line that reads:
+       ScrollSystem.init();
+   (inside BootSystem's onEnter / enter-btn click handler)
+
+   ADD these two lines IMMEDIATELY AFTER it:
+       CommBusSystem.init();
+       FirmwareSystem.init();
+
+   Also add them to the DOMContentLoaded block like so:
+   (they are safe to call early — they check for DOM presence)
+─────────────────────────────────────────────────────────────── */
 
 /* ══════════════════════════════════════════════════════════════
    BOOTSTRAP — init order matters

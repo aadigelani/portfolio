@@ -415,7 +415,365 @@
       </div>
     </div>
   </section>
+  <!-- ═══════════════════════════════════════════════════════════
+     PASTE LOCATION: In index.html, AFTER the #logic section
+     (after </section> that closes id="logic") and BEFORE the
+     #projects section.
+═══════════════════════════════════════════════════════════ -->
 
+
+<!-- ─────────────────────────────────
+     COMMUNICATION BUS — Clubs & Chapters
+     Concept: Processor ↔ External modules via comm bus
+     ADD_NEW_ORG_HERE — copy one .bus-node block
+───────────────────────────────── -->
+<section id="comms" class="sec">
+  <div class="sec-inner">
+    <p class="sec-badge">COMM_BUS::I2C_SPI</p>
+    <h2 class="sec-title">COMMUNICATION <span class="ac">BUS</span></h2>
+    <div class="sec-rule"></div>
+
+    <div class="bus-layout">
+
+      <!-- Central horizontal bus spine -->
+      <div class="bus-spine" aria-hidden="true">
+        <svg class="bus-spine-svg" id="bus-spine-svg"
+             viewBox="0 0 900 20" preserveAspectRatio="none">
+          <!-- Main bus rail — drawn by GSAP on scroll -->
+          <line id="bus-rail" x1="0" y1="10" x2="900" y2="10"
+                stroke="var(--g)" stroke-width="2.5"
+                stroke-dasharray="900" stroke-dashoffset="900"/>
+          <!-- Bus clock tick marks -->
+          <g id="bus-ticks" opacity="0">
+            <line x1="100" y1="4" x2="100" y2="16" stroke="var(--g-dim)" stroke-width="1"/>
+            <line x1="200" y1="4" x2="200" y2="16" stroke="var(--g-dim)" stroke-width="1"/>
+            <line x1="300" y1="4" x2="300" y2="16" stroke="var(--g-dim)" stroke-width="1"/>
+            <line x1="400" y1="4" x2="400" y2="16" stroke="var(--g-dim)" stroke-width="1"/>
+            <line x1="500" y1="4" x2="500" y2="16" stroke="var(--g-dim)" stroke-width="1"/>
+            <line x1="600" y1="4" x2="600" y2="16" stroke="var(--g-dim)" stroke-width="1"/>
+            <line x1="700" y1="4" x2="700" y2="16" stroke="var(--g-dim)" stroke-width="1"/>
+            <line x1="800" y1="4" x2="800" y2="16" stroke="var(--g-dim)" stroke-width="1"/>
+          </g>
+          <!-- Signal pulse — animated dot that travels bus -->
+          <circle id="bus-pulse" cx="0" cy="10" r="5"
+                  fill="var(--g)" opacity="0"
+                  style="filter:drop-shadow(0 0 6px var(--g))"/>
+        </svg>
+      </div>
+
+      <!-- Org nodes grid — nodes branch UP and DOWN alternately -->
+      <div class="bus-nodes" id="bus-nodes">
+
+        <!-- ══ ADD_NEW_ORG_HERE ══
+             Copy one .bus-node block below.
+             Alternate data-dir="up" and data-dir="down"
+             for above/below bus placement.
+        ═══════════════════════════ -->
+
+        <!-- NODE 01 — Example: IEEE Student Branch -->
+        <div class="bus-node reveal-node" data-dir="up" data-index="0">
+          <div class="bus-node-inner">
+            <!-- Branch trace line (drawn by GSAP) -->
+            <svg class="branch-trace" viewBox="0 0 2 60" preserveAspectRatio="none" aria-hidden="true">
+              <line class="branch-line" x1="1" y1="0" x2="1" y2="60"
+                    stroke="var(--g)" stroke-width="1.5"
+                    stroke-dasharray="60" stroke-dashoffset="60"/>
+            </svg>
+            <!-- Node pad (solder point on trace) -->
+            <div class="bus-pad" aria-hidden="true"></div>
+            <!-- Node content card -->
+            <div class="bus-card" role="article" aria-label="IEEE Student Branch">
+              <div class="bc-corner tl" aria-hidden="true"></div>
+              <div class="bc-corner tr" aria-hidden="true"></div>
+              <div class="bc-corner bl" aria-hidden="true"></div>
+              <div class="bc-corner br" aria-hidden="true"></div>
+              <p class="bc-addr">NODE_01</p>
+              <h3 class="bc-name">IEEE Student Branch</h3>
+              <!-- REPLACE with your actual position -->
+              <p class="bc-pos">Member</p>
+              <!-- REPLACE with your actual one-line description -->
+              <p class="bc-desc">Engaged in IEEE technical workshops and seminars on emerging electronics domains.</p>
+              <div class="bc-status">
+                <span class="bc-dot" aria-hidden="true"></span>
+                <span class="bc-online">CONNECTED</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- NODE 02 — Example: Robotics Club -->
+        <div class="bus-node reveal-node" data-dir="down" data-index="1">
+          <div class="bus-node-inner">
+            <div class="bus-pad" aria-hidden="true"></div>
+            <svg class="branch-trace" viewBox="0 0 2 60" preserveAspectRatio="none" aria-hidden="true">
+              <line class="branch-line" x1="1" y1="0" x2="1" y2="60"
+                    stroke="var(--g)" stroke-width="1.5"
+                    stroke-dasharray="60" stroke-dashoffset="60"/>
+            </svg>
+            <div class="bus-card" role="article" aria-label="Robotics Club">
+              <div class="bc-corner tl" aria-hidden="true"></div>
+              <div class="bc-corner tr" aria-hidden="true"></div>
+              <div class="bc-corner bl" aria-hidden="true"></div>
+              <div class="bc-corner br" aria-hidden="true"></div>
+              <p class="bc-addr">NODE_02</p>
+              <h3 class="bc-name">Robotics Club</h3>
+              <!-- REPLACE with your actual position -->
+              <p class="bc-pos">Core Member</p>
+              <!-- REPLACE with your actual one-line description -->
+              <p class="bc-desc">Built autonomous systems integrating sensor fusion, motor control, and real-time feedback loops.</p>
+              <div class="bc-status">
+                <span class="bc-dot" aria-hidden="true"></span>
+                <span class="bc-online">CONNECTED</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- NODE 03 — Example: Electronics Society -->
+        <div class="bus-node reveal-node" data-dir="up" data-index="2">
+          <div class="bus-node-inner">
+            <svg class="branch-trace" viewBox="0 0 2 60" preserveAspectRatio="none" aria-hidden="true">
+              <line class="branch-line" x1="1" y1="0" x2="1" y2="60"
+                    stroke="var(--g)" stroke-width="1.5"
+                    stroke-dasharray="60" stroke-dashoffset="60"/>
+            </svg>
+            <div class="bus-pad" aria-hidden="true"></div>
+            <div class="bus-card" role="article" aria-label="Electronics Society">
+              <div class="bc-corner tl" aria-hidden="true"></div>
+              <div class="bc-corner tr" aria-hidden="true"></div>
+              <div class="bc-corner bl" aria-hidden="true"></div>
+              <div class="bc-corner br" aria-hidden="true"></div>
+              <p class="bc-addr">NODE_03</p>
+              <h3 class="bc-name">Electronics Society</h3>
+              <!-- REPLACE with your actual position -->
+              <p class="bc-pos">Technical Lead</p>
+              <!-- REPLACE with your actual one-line description -->
+              <p class="bc-desc">Led hardware lab sessions and mentored juniors on PCB design workflows.</p>
+              <div class="bc-status">
+                <span class="bc-dot" aria-hidden="true"></span>
+                <span class="bc-online">CONNECTED</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- NODE 04 — Example: Hackathon Chapter -->
+        <div class="bus-node reveal-node" data-dir="down" data-index="3">
+          <div class="bus-node-inner">
+            <div class="bus-pad" aria-hidden="true"></div>
+            <svg class="branch-trace" viewBox="0 0 2 60" preserveAspectRatio="none" aria-hidden="true">
+              <line class="branch-line" x1="1" y1="0" x2="1" y2="60"
+                    stroke="var(--g)" stroke-width="1.5"
+                    stroke-dasharray="60" stroke-dashoffset="60"/>
+            </svg>
+            <div class="bus-card" role="article" aria-label="Hackathon Chapter">
+              <div class="bc-corner tl" aria-hidden="true"></div>
+              <div class="bc-corner tr" aria-hidden="true"></div>
+              <div class="bc-corner bl" aria-hidden="true"></div>
+              <div class="bc-corner br" aria-hidden="true"></div>
+              <p class="bc-addr">NODE_04</p>
+              <h3 class="bc-name">Hackathon Chapter</h3>
+              <!-- REPLACE with your actual position -->
+              <p class="bc-pos">Team Captain</p>
+              <!-- REPLACE with your actual one-line description -->
+              <p class="bc-desc">Captained cross-disciplinary teams at national-level hackathons, integrating embedded hardware with software stacks.</p>
+              <div class="bc-status">
+                <span class="bc-dot" aria-hidden="true"></span>
+                <span class="bc-online">CONNECTED</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /bus-nodes -->
+
+      <!-- Bus terminator -->
+      <div class="bus-terminator" aria-hidden="true">
+        <span class="bt-label">BUS_END</span>
+        <div class="bt-resistor"></div>
+      </div>
+
+    </div><!-- /bus-layout -->
+  </div>
+</section>
+
+
+<!-- ─────────────────────────────────
+     FIRMWARE LIBRARY — Certifications
+     Concept: Certifications = firmware upgrades
+     ADD_NEW_CERT_HERE — copy one .fw-slot block
+     PASTE LOCATION: AFTER #projects section, BEFORE #research
+───────────────────────────────── -->
+  <section id="firmware" class="sec">
+    <div class="sec-inner">
+      <p class="sec-badge">FIRMWARE_LIB::UPGRADES</p>
+      <h2 class="sec-title">FIRMWARE <span class="ac">LIBRARY</span></h2>
+      <div class="sec-rule"></div>
+
+      <!-- Terminal boot log — plays on scroll -->
+      <div class="fw-terminal reveal" aria-live="polite">
+        <div class="fwt-bar" aria-hidden="true">
+          <span class="td r"></span><span class="td y"></span><span class="td g"></span>
+          <span class="fwt-title">firmware_upgrade.sh</span>
+        </div>
+        <div class="fwt-body" id="fw-terminal-body">
+          <p class="fwl"><span class="fwp">$</span> <span class="fwc">./install --all-modules --verify</span></p>
+          <p class="fwl fwdim" id="fw-log-line">// Scanning firmware library…</p>
+        </div>
+      </div>
+
+      <!-- Firmware slot rack -->
+      <div class="fw-rack" id="fw-rack">
+
+        <!-- ══ ADD_NEW_CERT_HERE ══
+            Copy one .fw-slot block below.
+            data-slot    : slot number label e.g. "05"
+            data-version : version string   e.g. "v1.2"
+            .fw-slot-name: certification name
+            .fw-issuer   : issuing body
+            .fw-tags     : skill tags (add/remove <span> as needed)
+        ═════════════════════════════════ -->
+
+        <!-- SLOT 01 -->
+        <div class="fw-slot reveal-fw" data-slot="01" data-version="v3.11" tabindex="0"
+            role="article" aria-label="Python Fundamentals firmware slot">
+          <div class="fws-left">
+            <div class="fws-id">
+              <span class="fws-label">FIRMWARE</span>
+              <span class="fws-num">SLOT 01</span>
+            </div>
+            <div class="fws-pin-row" aria-hidden="true">
+              <span class="fws-pin"></span><span class="fws-pin"></span>
+              <span class="fws-pin"></span><span class="fws-pin"></span>
+            </div>
+          </div>
+          <div class="fws-mid">
+            <div class="fws-notch" aria-hidden="true"></div>
+            <p class="fw-slot-name">Python Fundamentals</p>
+            <!-- REPLACE with actual issuer -->
+            <p class="fw-issuer">Cisco / PCEP</p>
+            <div class="fw-tags">
+              <!-- REPLACE / ADD tags to match your cert -->
+              <span>Python</span><span>OOP</span><span>DSA</span>
+            </div>
+          </div>
+          <div class="fws-right">
+            <div class="fws-ver">{{ data-version }}</div>
+            <div class="fws-status-wrap">
+              <div class="fws-led" aria-hidden="true"></div>
+              <span class="fws-status">INSTALLED</span>
+            </div>
+            <div class="fws-bar-wrap" aria-hidden="true">
+              <div class="fws-bar"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SLOT 02 -->
+        <div class="fw-slot reveal-fw" data-slot="02" data-version="v9.4" tabindex="0"
+            role="article" aria-label="MATLAB firmware slot">
+          <div class="fws-left">
+            <div class="fws-id">
+              <span class="fws-label">FIRMWARE</span>
+              <span class="fws-num">SLOT 02</span>
+            </div>
+            <div class="fws-pin-row" aria-hidden="true">
+              <span class="fws-pin"></span><span class="fws-pin"></span>
+              <span class="fws-pin"></span><span class="fws-pin"></span>
+            </div>
+          </div>
+          <div class="fws-mid">
+            <div class="fws-notch" aria-hidden="true"></div>
+            <p class="fw-slot-name">MATLAB Onramp</p>
+            <!-- REPLACE with actual issuer -->
+            <p class="fw-issuer">MathWorks</p>
+            <div class="fw-tags">
+              <span>MATLAB</span><span>Signal Processing</span><span>Simulation</span>
+            </div>
+          </div>
+          <div class="fws-right">
+            <div class="fws-ver">{{ data-version }}</div>
+            <div class="fws-status-wrap">
+              <div class="fws-led" aria-hidden="true"></div>
+              <span class="fws-status">INSTALLED</span>
+            </div>
+            <div class="fws-bar-wrap" aria-hidden="true">
+              <div class="fws-bar"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SLOT 03 -->
+        <div class="fw-slot reveal-fw" data-slot="03" data-version="v1.0" tabindex="0"
+            role="article" aria-label="Networking firmware slot">
+          <div class="fws-left">
+            <div class="fws-id">
+              <span class="fws-label">FIRMWARE</span>
+              <span class="fws-num">SLOT 03</span>
+            </div>
+            <div class="fws-pin-row" aria-hidden="true">
+              <span class="fws-pin"></span><span class="fws-pin"></span>
+              <span class="fws-pin"></span><span class="fws-pin"></span>
+            </div>
+          </div>
+          <div class="fws-mid">
+            <div class="fws-notch" aria-hidden="true"></div>
+            <p class="fw-slot-name">Networking Essentials</p>
+            <!-- REPLACE with actual issuer -->
+            <p class="fw-issuer">Cisco / NDG</p>
+            <div class="fw-tags">
+              <span>TCP/IP</span><span>Protocols</span><span>IoT Networking</span>
+            </div>
+          </div>
+          <div class="fws-right">
+            <div class="fws-ver">{{ data-version }}</div>
+            <div class="fws-status-wrap">
+              <div class="fws-led" aria-hidden="true"></div>
+              <span class="fws-status">INSTALLED</span>
+            </div>
+            <div class="fws-bar-wrap" aria-hidden="true">
+              <div class="fws-bar"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- SLOT 04 -->
+        <div class="fw-slot reveal-fw" data-slot="04" data-version="v2.3" tabindex="0"
+            role="article" aria-label="KiCad PCB Design firmware slot">
+          <div class="fws-left">
+            <div class="fws-id">
+              <span class="fws-label">FIRMWARE</span>
+              <span class="fws-num">SLOT 04</span>
+            </div>
+            <div class="fws-pin-row" aria-hidden="true">
+              <span class="fws-pin"></span><span class="fws-pin"></span>
+              <span class="fws-pin"></span><span class="fws-pin"></span>
+            </div>
+          </div>
+          <div class="fws-mid">
+            <div class="fws-notch" aria-hidden="true"></div>
+            <p class="fw-slot-name">PCB Design — KiCad</p>
+            <!-- REPLACE with actual issuer -->
+            <p class="fw-issuer">KiCad Foundation</p>
+            <div class="fw-tags">
+              <span>Schematic</span><span>Layout</span><span>DRC</span>
+            </div>
+          </div>
+          <div class="fws-right">
+            <div class="fws-ver">{{ data-version }}</div>
+            <div class="fws-status-wrap">
+              <div class="fws-led" aria-hidden="true"></div>
+              <span class="fws-status">INSTALLED</span>
+            </div>
+            <div class="fws-bar-wrap" aria-hidden="true">
+              <div class="fws-bar"></div>
+            </div>
+          </div>
+        </div>
+
+      </div><!-- /fw-rack -->
+    </div>
+  </section>
   <!-- ─────────────────────────────────
        PROJECTS
   ───────────────────────────────── -->

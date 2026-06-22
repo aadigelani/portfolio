@@ -1110,7 +1110,582 @@ button{cursor:pointer;font:inherit;border:none;background:none}
   letter-spacing:4px;color:var(--text-d);text-align:center;
 }
 .footer-txt span[aria-hidden]{color:var(--g)}
+/* ══════════════════════════════════════════════════════════════
+   NEW SECTIONS — Communication Bus + Firmware Library
+   PASTE LOCATION: At the bottom of style.css, before the last line
+   ══════════════════════════════════════════════════════════════ */
 
+
+/* ══════════════════════════════════════════════════════════════
+   SECTION: COMMUNICATION BUS  (#comms)
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Layout shell ─────────────────────────────────────────── */
+.bus-layout {
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  position: relative;
+  width: 100%;
+  overflow: hidden; /* contain overflowing SVG */
+}
+
+/* ── Bus spine (horizontal rail SVG) ──────────────────────── */
+.bus-spine {
+  width: 100%;
+  height: 20px;
+  position: relative;
+  z-index: 2;
+  /* vertical centering inside the node grid row */
+  margin: 0;
+}
+.bus-spine-svg {
+  width: 100%;
+  height: 20px;
+  display: block;
+  overflow: visible;
+}
+
+/* ── Node grid ─────────────────────────────────────────────── */
+.bus-nodes {
+  display: grid;
+  /* Equal columns, one per node — JS sets grid-template-columns */
+  grid-auto-flow: column;
+  grid-auto-columns: 1fr;
+  position: relative;
+  /* The bus spine sits in the vertical middle of this grid */
+  padding: 140px 0; /* top = space for up-nodes, bottom = space for down-nodes */
+}
+
+/* ── Individual node ──────────────────────────────────────── */
+.bus-node {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  /* Vertical placement handled by data-dir — see below */
+}
+
+/* Inner wrapper — positions trace + pad + card as a column */
+.bus-node-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 180px;
+}
+
+/* UP nodes: card → trace → pad (card sits above the bus)  */
+.bus-node[data-dir="up"] {
+  align-items: flex-end;
+  /* Push upward from bus center */
+  position: absolute;
+  top: 0;
+  left: 0; right: 0;
+  /* JS calculates individual left offset */
+}
+.bus-node[data-dir="up"] .bus-node-inner {
+  flex-direction: column-reverse; /* pad first (bottom), card last (top) */
+  position: absolute;
+  bottom: 50%;  /* anchor bottom to bus-spine midpoint */
+  transform: translateY(10px); /* overlap the bus rail */
+}
+
+/* DOWN nodes: pad → trace → card (card sits below the bus) */
+.bus-node[data-dir="down"] {
+  position: absolute;
+  left: 0; right: 0;
+}
+.bus-node[data-dir="down"] .bus-node-inner {
+  flex-direction: column; /* pad first (top), card last (bottom) */
+  position: absolute;
+  top: 50%;
+  transform: translateY(-10px);
+}
+
+/* ── Solder pad (connection point on bus rail) ──────────────── */
+.bus-pad {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--bg);
+  border: 2px solid var(--g);
+  box-shadow: 0 0 6px var(--g);
+  position: relative;
+  z-index: 3;
+  flex-shrink: 0;
+  transition: box-shadow .3s var(--ease), background .3s var(--ease);
+}
+.bus-node:hover .bus-pad,
+.bus-node:focus-within .bus-pad {
+  background: var(--g);
+  box-shadow: 0 0 14px var(--g), 0 0 30px rgba(0,232,122,.4);
+}
+
+/* ── Branch trace (vertical line between pad and card) ──────── */
+.branch-trace {
+  width: 2px;
+  height: 60px;
+  display: block;
+  flex-shrink: 0;
+}
+
+/* ── Bus card ────────────────────────────────────────────────── */
+.bus-card {
+  position: relative;
+  background: var(--bg2);
+  border: 1px solid var(--border);
+  padding: 12px 14px 10px;
+  width: 100%;
+  max-width: 180px;
+  transition:
+    border-color .3s var(--ease),
+    box-shadow   .3s var(--ease),
+    transform    .3s var(--ease);
+  cursor: default;
+}
+
+.bus-node:hover .bus-card,
+.bus-node:focus-within .bus-card {
+  border-color: var(--g);
+  box-shadow: 0 0 20px rgba(0,232,122,.18);
+  transform: translateY(-3px);
+}
+
+/* Corner bracket decorations (PCB pad style) */
+.bc-corner {
+  position: absolute;
+  width: 8px; height: 8px;
+  border-color: var(--g-dim);
+  border-style: solid;
+  transition: border-color .3s;
+}
+.bc-corner.tl { top: -1px; left: -1px;  border-width: 1.5px 0 0 1.5px; }
+.bc-corner.tr { top: -1px; right: -1px; border-width: 1.5px 1.5px 0 0; }
+.bc-corner.bl { bottom: -1px; left: -1px;  border-width: 0 0 1.5px 1.5px; }
+.bc-corner.br { bottom: -1px; right: -1px; border-width: 0 1.5px 1.5px 0; }
+.bus-node:hover .bc-corner,
+.bus-node:focus-within .bc-corner {
+  border-color: var(--g);
+}
+
+/* Card content */
+.bc-addr {
+  font-family: var(--f-mono);
+  font-size: .6rem;
+  color: var(--text-d);
+  letter-spacing: .08em;
+  margin-bottom: 4px;
+}
+.bc-name {
+  font-family: var(--f-disp);
+  font-size: .72rem;
+  color: var(--g);
+  line-height: 1.25;
+  margin-bottom: 4px;
+  letter-spacing: .03em;
+}
+.bc-pos {
+  font-family: var(--f-mono);
+  font-size: .65rem;
+  color: var(--c);
+  margin-bottom: 6px;
+  letter-spacing: .06em;
+}
+.bc-desc {
+  font-family: var(--f-body);
+  font-size: .7rem;
+  color: var(--text);
+  line-height: 1.4;
+  margin-bottom: 8px;
+  opacity: .8;
+}
+
+/* Connection status indicator */
+.bc-status {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.bc-dot {
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--g);
+  box-shadow: 0 0 5px var(--g);
+  animation: bc-blink 2s infinite;
+}
+@keyframes bc-blink {
+  0%,100% { opacity: 1; }
+  50%      { opacity: .3; }
+}
+.bc-online {
+  font-family: var(--f-mono);
+  font-size: .55rem;
+  color: var(--g);
+  letter-spacing: .1em;
+}
+
+/* ── Bus terminator (right end) ─────────────────────────────── */
+.bus-terminator {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 4px;
+  justify-content: flex-end;
+  padding-right: 4px;
+}
+.bt-label {
+  font-family: var(--f-mono);
+  font-size: .6rem;
+  color: var(--text-d);
+  letter-spacing: .08em;
+}
+.bt-resistor {
+  width: 36px; height: 12px;
+  border: 1.5px solid var(--g-dim);
+  background: repeating-linear-gradient(
+    90deg,
+    var(--g-dim) 0, var(--g-dim) 3px,
+    transparent  3px, transparent 6px
+  );
+  border-radius: 2px;
+}
+
+/* ── Signal pulse overlay (on hover — JS adds class) ──────────── */
+.bus-node.pulse-active .bus-pad {
+  animation: pad-pulse .6s var(--ease-out) forwards;
+}
+@keyframes pad-pulse {
+  0%   { box-shadow: 0 0 6px var(--g); }
+  50%  { box-shadow: 0 0 22px var(--g), 0 0 40px rgba(0,232,122,.5); background: var(--g); }
+  100% { box-shadow: 0 0 10px var(--g); background: var(--g); }
+}
+
+/* ── Reveal state (JS removes .hidden-node) ─────────────────── */
+.reveal-node {
+  opacity: 0;
+  /* GSAP handles transform */
+}
+
+/* ── MOBILE: stack vertically ──────────────────────────────── */
+@media (max-width: 700px) {
+  .bus-spine { display: none; }
+  .bus-nodes {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    padding: 0;
+    border-left: 2px solid var(--g-dim);
+    margin-left: 16px;
+  }
+  .bus-node {
+    position: static !important;
+    display: block !important;
+    margin-bottom: 24px;
+    padding-left: 20px;
+  }
+  .bus-node[data-dir="up"] .bus-node-inner,
+  .bus-node[data-dir="down"] .bus-node-inner {
+    position: static;
+    flex-direction: row;
+    align-items: flex-start;
+    transform: none;
+    bottom: auto; top: auto;
+    gap: 10px;
+  }
+  .branch-trace { display: none; }
+  .bus-pad {
+    margin-left: -26px;
+    margin-top: 14px;
+    flex-shrink: 0;
+  }
+  .bus-card {
+    max-width: 100%;
+  }
+  .bus-terminator { display: none; }
+}
+
+
+/* ══════════════════════════════════════════════════════════════
+   SECTION: FIRMWARE LIBRARY  (#firmware)
+   ══════════════════════════════════════════════════════════════ */
+
+/* ── Terminal log widget ─────────────────────────────────────── */
+.fw-terminal {
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  margin-bottom: 32px;
+  max-width: 600px;
+}
+.fwt-bar {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  background: var(--bg3);
+  border-bottom: 1px solid var(--border);
+}
+.fwt-title {
+  font-family: var(--f-mono);
+  font-size: .7rem;
+  color: var(--text-d);
+  margin-left: 6px;
+}
+.fwt-body {
+  padding: 14px 16px 12px;
+}
+.fwl {
+  font-family: var(--f-mono);
+  font-size: .78rem;
+  color: var(--text);
+  line-height: 1.8;
+}
+.fwl .fwp { color: var(--g); margin-right: 6px; }
+.fwl .fwc { color: var(--c); }
+.fwdim   { color: var(--text-d); font-size: .72rem; }
+
+/* ── Firmware rack ───────────────────────────────────────────── */
+.fw-rack {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* ── Single firmware slot ────────────────────────────────────── */
+.fw-slot {
+  display: grid;
+  grid-template-columns: 100px 1fr 130px;
+  align-items: stretch;
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  position: relative;
+  overflow: hidden;
+  transition:
+    border-color .3s var(--ease),
+    box-shadow   .3s var(--ease);
+  cursor: default;
+}
+
+/* Hover / focus — power up */
+.fw-slot:hover,
+.fw-slot:focus {
+  border-color: var(--g);
+  box-shadow: 0 0 24px rgba(0,232,122,.15), inset 0 0 40px rgba(0,232,122,.04);
+  outline: none;
+}
+/* Activated state (added by JS on hover) */
+.fw-slot.active .fws-status { color: var(--g); }
+.fw-slot.active .fws-led    { background: var(--g); box-shadow: 0 0 10px var(--g); }
+.fw-slot.active .fws-bar    { width: 100% !important; background: var(--g); }
+
+/* Scanline shimmer on hover */
+.fw-slot::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 3px,
+    rgba(0,232,122,.015) 3px,
+    rgba(0,232,122,.015) 4px
+  );
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity .3s;
+}
+.fw-slot:hover::after { opacity: 1; }
+
+/* ── Left panel (slot ID + pins) ─────────────────────────────── */
+.fws-left {
+  padding: 14px 12px;
+  border-right: 1px solid var(--border);
+  background: var(--bg3);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 12px;
+}
+.fws-id {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.fws-label {
+  font-family: var(--f-mono);
+  font-size: .55rem;
+  color: var(--text-d);
+  letter-spacing: .1em;
+}
+.fws-num {
+  font-family: var(--f-disp);
+  font-size: .75rem;
+  color: var(--g);
+  letter-spacing: .05em;
+}
+/* Pin row at the bottom of left panel */
+.fws-pin-row {
+  display: flex;
+  gap: 5px;
+  padding-left: 2px;
+}
+.fws-pin {
+  display: block;
+  width: 5px;
+  height: 14px;
+  background: var(--g-dim);
+  border-radius: 1px;
+  transition: background .3s;
+}
+.fw-slot:hover .fws-pin,
+.fw-slot.active .fws-pin {
+  background: var(--g);
+  box-shadow: 0 0 4px var(--g);
+}
+
+/* ── Middle panel (cert info) ────────────────────────────────── */
+.fws-mid {
+  padding: 14px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  position: relative;
+}
+/* IC notch mark */
+.fws-notch {
+  position: absolute;
+  top: 0; left: 50%;
+  transform: translateX(-50%);
+  width: 18px; height: 7px;
+  border: 1.5px solid var(--border);
+  border-top: none;
+  border-radius: 0 0 12px 12px;
+  background: var(--bg3);
+}
+.fw-slot-name {
+  font-family: var(--f-disp);
+  font-size: .85rem;
+  color: var(--text);
+  letter-spacing: .04em;
+  line-height: 1.2;
+  margin-top: 8px;
+  transition: color .3s;
+}
+.fw-slot:hover .fw-slot-name,
+.fw-slot.active .fw-slot-name {
+  color: var(--g);
+}
+.fw-issuer {
+  font-family: var(--f-mono);
+  font-size: .65rem;
+  color: var(--c);
+  letter-spacing: .06em;
+}
+.fw-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 5px;
+  margin-top: 4px;
+}
+.fw-tags span {
+  font-family: var(--f-mono);
+  font-size: .58rem;
+  color: var(--text-d);
+  border: 1px solid var(--border);
+  padding: 2px 6px;
+  letter-spacing: .06em;
+  transition: color .3s, border-color .3s;
+}
+.fw-slot:hover .fw-tags span,
+.fw-slot.active .fw-tags span {
+  color: var(--g);
+  border-color: var(--g-dim);
+}
+
+/* ── Right panel (status) ────────────────────────────────────── */
+.fws-right {
+  padding: 14px 14px 14px 12px;
+  border-left: 1px solid var(--border);
+  background: var(--bg3);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  gap: 8px;
+}
+.fws-ver {
+  font-family: var(--f-mono);
+  font-size: .6rem;
+  color: var(--text-d);
+  letter-spacing: .08em;
+}
+/* Status LED + text */
+.fws-status-wrap {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+.fws-led {
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--text-d);
+  flex-shrink: 0;
+  transition: background .3s, box-shadow .3s;
+}
+.fws-status {
+  font-family: var(--f-mono);
+  font-size: .65rem;
+  color: var(--text-d);
+  letter-spacing: .08em;
+  transition: color .3s;
+}
+/* Progress bar (fill animated by JS on scroll) */
+.fws-bar-wrap {
+  height: 3px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  overflow: hidden;
+}
+.fws-bar {
+  height: 100%;
+  width: 0%;
+  background: var(--g-dim);
+  transition: width .8s var(--ease), background .3s;
+}
+
+/* ── Reveal state ────────────────────────────────────────────── */
+.reveal-fw {
+  opacity: 0;
+  transform: translateX(-24px);
+}
+
+/* ── MOBILE responsive ───────────────────────────────────────── */
+@media (max-width: 640px) {
+  .fw-slot {
+    grid-template-columns: 80px 1fr;
+    grid-template-rows: auto auto;
+  }
+  .fws-right {
+    grid-column: 1 / -1;
+    border-left: none;
+    border-top: 1px solid var(--border);
+    flex-direction: row;
+    align-items: center;
+    padding: 8px 14px;
+  }
+  .fws-bar-wrap { flex: 1; }
+}
+@media (max-width: 420px) {
+  .fw-slot {
+    grid-template-columns: 1fr;
+  }
+  .fws-left {
+    flex-direction: row;
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 14px;
+  }
+}
 
 /* ══════════════════════════════════════════════════════════════
    MOBILE OVERRIDES
