@@ -1117,294 +1117,411 @@ button{cursor:pointer;font:inherit;border:none;background:none}
 
 
 /* ══════════════════════════════════════════════════════════════
-   SECTION: COMMUNICATION BUS  (#comms)
+   SECTION: PCB ROUTING NETWORK  (#comms)
+   Architecture: Central CPU + radial traces + module nodes
+   Layout: CSS position:relative wrap, JS places modules via
+           inline top/left — no grid/absolute conflict.
    ══════════════════════════════════════════════════════════════ */
 
-/* ── Layout shell ─────────────────────────────────────────── */
-.bus-layout {
+/* ── Telemetry bar ─────────────────────────────────────────── */
+.pn-telemetry {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  flex-wrap: wrap;
+  margin-bottom: 32px;
+  border: 1px solid var(--border);
+  background: var(--bg2);
+  padding: 8px 16px;
+  font-family: var(--f-mono);
+  font-size: .6rem;
+  letter-spacing: .1em;
+  overflow: hidden;
+}
+.pnt-item {
   display: flex;
   flex-direction: column;
-  gap: 0;
-  position: relative;
-  width: 100%;
-  overflow: hidden; /* contain overflowing SVG */
+  gap: 2px;
+  padding: 4px 14px;
+}
+.pnt-label {
+  color: var(--text-d);
+  font-size: .52rem;
+}
+.pnt-val {
+  color: var(--text);
+  font-size: .7rem;
+}
+.pnt-green { color: var(--g); }
+.pnt-cyan  { color: var(--c); }
+.pnt-sep {
+  width: 1px;
+  height: 28px;
+  background: var(--border);
+  flex-shrink: 0;
 }
 
-/* ── Bus spine (horizontal rail SVG) ──────────────────────── */
-.bus-spine {
-  width: 100%;
-  height: 20px;
+/* ── Main network wrap ─────────────────────────────────────── */
+.pn-wrap {
   position: relative;
-  z-index: 2;
-  /* vertical centering inside the node grid row */
-  margin: 0;
-}
-.bus-spine-svg {
   width: 100%;
-  height: 20px;
-  display: block;
+  /* Height set by JS to fit the ring layout */
+  min-height: 520px;
+  margin-bottom: 24px;
+}
+
+/* ── Trace SVG layer ──────────────────────────────────────── */
+.pn-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+  z-index: 0;
   overflow: visible;
 }
-
-/* ── Node grid ─────────────────────────────────────────────── */
-.bus-nodes {
-  display: grid;
-  /* Equal columns, one per node — JS sets grid-template-columns */
-  grid-auto-flow: column;
-  grid-auto-columns: 1fr;
-  position: relative;
-  /* The bus spine sits in the vertical middle of this grid */
-  padding: 140px 0; /* top = space for up-nodes, bottom = space for down-nodes */
+.pn-trace {
+  fill: none;
+  stroke: var(--g-dim);
+  stroke-width: 1.5;
+  stroke-dasharray: var(--dash-len, 400);
+  stroke-dashoffset: var(--dash-len, 400);
+  transition: stroke .3s;
+}
+.pn-trace.active {
+  stroke: rgba(0,232,122,.35);
+}
+/* Animated signal pulse dot (injected by JS) */
+.pn-pulse-dot {
+  fill: var(--g);
+  filter: drop-shadow(0 0 5px var(--g));
+  opacity: 0;
+}
+.pn-pulse-dot.cyan {
+  fill: var(--c);
+  filter: drop-shadow(0 0 5px var(--c));
 }
 
-/* ── Individual node ──────────────────────────────────────── */
-.bus-node {
-  position: relative;
+/* ── Central CPU node ─────────────────────────────────────── */
+.pn-cpu {
+  position: absolute;
+  /* JS sets top/left; these are defaults if JS hasn't run */
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 120px;
+  height: 120px;
+  z-index: 4;
   display: flex;
+  align-items: center;
   justify-content: center;
-  /* Vertical placement handled by data-dir — see below */
 }
 
-/* Inner wrapper — positions trace + pad + card as a column */
-.bus-node-inner {
+.pn-cpu-ring {
+  position: absolute;
+  border-radius: 50%;
+  border: 1px solid var(--g-dim);
+}
+.pn-cpu-ring.r1 {
+  width: 120px; height: 120px;
+  animation: pn-spin 18s linear infinite;
+  border-color: rgba(0,232,122,.25);
+  border-top-color: var(--g);
+}
+.pn-cpu-ring.r2 {
+  width: 96px; height: 96px;
+  animation: pn-spin 12s linear infinite reverse;
+  border-color: rgba(0,200,240,.15);
+  border-right-color: var(--c);
+}
+.pn-cpu-ring.r3 {
+  width: 72px; height: 72px;
+  border-color: rgba(0,232,122,.1);
+  animation: pn-pulse-ring 3s ease-in-out infinite;
+}
+@keyframes pn-spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes pn-pulse-ring {
+  0%,100% { opacity: .4; transform: scale(1); }
+  50%      { opacity: 1;  transform: scale(1.04); }
+}
+
+.pn-cpu-core {
+  position: relative;
+  z-index: 2;
+  width: 56px; height: 56px;
+  background: var(--bg3);
+  border: 1.5px solid var(--g);
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 100%;
-  max-width: 180px;
+  justify-content: center;
+  box-shadow: 0 0 20px rgba(0,232,122,.2), inset 0 0 12px rgba(0,232,122,.05);
+}
+.pn-cpu-label {
+  font-family: var(--f-mono);
+  font-size: .5rem;
+  color: var(--text-d);
+  letter-spacing: .1em;
+}
+.pn-cpu-id {
+  font-family: var(--f-disp);
+  font-size: .62rem;
+  color: var(--g);
+  letter-spacing: .05em;
+  line-height: 1.2;
+}
+.pn-cpu-hz {
+  font-family: var(--f-mono);
+  font-size: .45rem;
+  color: var(--c);
+  letter-spacing: .08em;
 }
 
-/* UP nodes: card → trace → pad (card sits above the bus)  */
-.bus-node[data-dir="up"] {
-  align-items: flex-end;
-  /* Push upward from bus center */
+/* CPU pin decorations */
+.pn-cpu-pins {
   position: absolute;
-  top: 0;
-  left: 0; right: 0;
-  /* JS calculates individual left offset */
+  inset: 0;
+  pointer-events: none;
 }
-.bus-node[data-dir="up"] .bus-node-inner {
-  flex-direction: column-reverse; /* pad first (bottom), card last (top) */
+.pn-cpu-pins span {
   position: absolute;
-  bottom: 50%;  /* anchor bottom to bus-spine midpoint */
-  transform: translateY(10px); /* overlap the bus rail */
+  background: var(--g-dim);
+  border-radius: 1px;
 }
+.pn-cpu-pins span:nth-child(1){ width:8px;height:2px; top:26px; left:-8px; }
+.pn-cpu-pins span:nth-child(2){ width:8px;height:2px; top:36px; left:-8px; }
+.pn-cpu-pins span:nth-child(3){ width:8px;height:2px; top:46px; left:-8px; }
+.pn-cpu-pins span:nth-child(4){ width:8px;height:2px; top:56px; left:-8px; }
+.pn-cpu-pins span:nth-child(5){ width:8px;height:2px; top:26px; right:-8px; }
+.pn-cpu-pins span:nth-child(6){ width:8px;height:2px; top:36px; right:-8px; }
+.pn-cpu-pins span:nth-child(7){ width:8px;height:2px; top:46px; right:-8px; }
+.pn-cpu-pins span:nth-child(8){ width:8px;height:2px; top:56px; right:-8px; }
 
-/* DOWN nodes: pad → trace → card (card sits below the bus) */
-.bus-node[data-dir="down"] {
+/* ── Module node cards ─────────────────────────────────────── */
+.pn-module {
   position: absolute;
-  left: 0; right: 0;
-}
-.bus-node[data-dir="down"] .bus-node-inner {
-  flex-direction: column; /* pad first (top), card last (bottom) */
-  position: absolute;
-  top: 50%;
-  transform: translateY(-10px);
-}
-
-/* ── Solder pad (connection point on bus rail) ──────────────── */
-.bus-pad {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  background: var(--bg);
-  border: 2px solid var(--g);
-  box-shadow: 0 0 6px var(--g);
-  position: relative;
+  /* JS sets top/left per module */
+  width: 200px;
   z-index: 3;
-  flex-shrink: 0;
-  transition: box-shadow .3s var(--ease), background .3s var(--ease);
+  opacity: 0;
+  transform: scale(.85);
+  transition:
+    opacity .4s var(--ease),
+    transform .4s var(--ease);
 }
-.bus-node:hover .bus-pad,
-.bus-node:focus-within .bus-pad {
-  background: var(--g);
-  box-shadow: 0 0 14px var(--g), 0 0 30px rgba(0,232,122,.4);
-}
-
-/* ── Branch trace (vertical line between pad and card) ──────── */
-.branch-trace {
-  width: 2px;
-  height: 60px;
-  display: block;
-  flex-shrink: 0;
+.pn-module.pnm-visible {
+  opacity: 1;
+  transform: scale(1);
 }
 
-/* ── Bus card ────────────────────────────────────────────────── */
-.bus-card {
+.pnm-inner {
   position: relative;
   background: var(--bg2);
   border: 1px solid var(--border);
   padding: 12px 14px 10px;
-  width: 100%;
-  max-width: 180px;
   transition:
     border-color .3s var(--ease),
     box-shadow   .3s var(--ease),
     transform    .3s var(--ease);
-  cursor: default;
 }
-
-.bus-node:hover .bus-card,
-.bus-node:focus-within .bus-card {
+.pn-module:hover .pnm-inner,
+.pn-module:focus-within .pnm-inner {
   border-color: var(--g);
-  box-shadow: 0 0 20px rgba(0,232,122,.18);
-  transform: translateY(-3px);
+  box-shadow: 0 0 24px rgba(0,232,122,.18);
+  transform: scale(1.03);
 }
 
-/* Corner bracket decorations (PCB pad style) */
-.bc-corner {
+/* Corner brackets */
+.pnm-corner {
   position: absolute;
   width: 8px; height: 8px;
   border-color: var(--g-dim);
   border-style: solid;
   transition: border-color .3s;
 }
-.bc-corner.tl { top: -1px; left: -1px;  border-width: 1.5px 0 0 1.5px; }
-.bc-corner.tr { top: -1px; right: -1px; border-width: 1.5px 1.5px 0 0; }
-.bc-corner.bl { bottom: -1px; left: -1px;  border-width: 0 0 1.5px 1.5px; }
-.bc-corner.br { bottom: -1px; right: -1px; border-width: 0 1.5px 1.5px 0; }
-.bus-node:hover .bc-corner,
-.bus-node:focus-within .bc-corner {
-  border-color: var(--g);
+.pnm-corner.tl { top:-1px;  left:-1px;   border-width: 1.5px 0 0 1.5px; }
+.pnm-corner.tr { top:-1px;  right:-1px;  border-width: 1.5px 1.5px 0 0; }
+.pnm-corner.bl { bottom:-1px; left:-1px; border-width: 0 0 1.5px 1.5px; }
+.pnm-corner.br { bottom:-1px; right:-1px;border-width: 0 1.5px 1.5px 0; }
+.pn-module:hover .pnm-corner,
+.pn-module:focus-within .pnm-corner { border-color: var(--g); }
+
+/* LED status indicator */
+.pnm-led {
+  position: absolute;
+  top: 10px; right: 10px;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--g);
+  box-shadow: 0 0 6px var(--g);
+  animation: pnm-blink 2.4s ease-in-out infinite;
+}
+@keyframes pnm-blink {
+  0%,100% { opacity: 1; }
+  50%      { opacity: .2; }
 }
 
-/* Card content */
-.bc-addr {
+/* Card text */
+.pnm-addr {
   font-family: var(--f-mono);
-  font-size: .6rem;
+  font-size: .54rem;
   color: var(--text-d);
-  letter-spacing: .08em;
+  letter-spacing: .1em;
   margin-bottom: 4px;
 }
-.bc-name {
+.pnm-name {
   font-family: var(--f-disp);
-  font-size: .72rem;
+  font-size: .68rem;
   color: var(--g);
-  line-height: 1.25;
-  margin-bottom: 4px;
+  line-height: 1.3;
+  margin-bottom: 3px;
   letter-spacing: .03em;
 }
-.bc-pos {
+.pnm-role {
   font-family: var(--f-mono);
-  font-size: .65rem;
+  font-size: .6rem;
   color: var(--c);
   margin-bottom: 6px;
   letter-spacing: .06em;
 }
-.bc-desc {
+.pnm-desc {
   font-family: var(--f-body);
-  font-size: .7rem;
+  font-size: .68rem;
   color: var(--text);
-  line-height: 1.4;
-  margin-bottom: 8px;
-  opacity: .8;
+  line-height: 1.45;
+  opacity: .85;
+  margin-bottom: 10px;
 }
 
-/* Connection status indicator */
-.bc-status {
+/* Card footer: signal bars + status */
+.pnm-footer {
   display: flex;
   align-items: center;
-  gap: 5px;
+  justify-content: space-between;
 }
-.bc-dot {
-  width: 5px; height: 5px;
-  border-radius: 50%;
-  background: var(--g);
-  box-shadow: 0 0 5px var(--g);
-  animation: bc-blink 2s infinite;
+.pnm-signal {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 12px;
 }
-@keyframes bc-blink {
-  0%,100% { opacity: 1; }
-  50%      { opacity: .3; }
+/* JS reads data-strength and renders bars */
+.pnm-sig-bar {
+  display: flex;
+  align-items: flex-end;
+  gap: 2px;
+  height: 12px;
 }
-.bc-online {
+.pnm-status {
   font-family: var(--f-mono);
-  font-size: .55rem;
+  font-size: .5rem;
   color: var(--g);
   letter-spacing: .1em;
 }
 
-/* ── Bus terminator (right end) ─────────────────────────────── */
-.bus-terminator {
+/* ── Oscilloscope micro-animation ─────────────────────────── */
+.pnm-osc {
+  margin-top: 6px;
+  width: 100%;
+  height: 24px;
+  border: 1px solid var(--border);
+  background: rgba(0,20,0,.6);
+  overflow: hidden;
+}
+.pnm-osc-svg {
+  width: 100%;
+  height: 24px;
+  display: block;
+}
+.pnm-wave {
+  fill: none;
+  stroke: rgba(0,232,122,.6);
+  stroke-width: 1.2;
+  animation: pnm-sweep 3s linear infinite;
+}
+@keyframes pnm-sweep {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-50%); }
+}
+/* Alternate wave color per module */
+#pnm-1 .pnm-wave { stroke: rgba(0,200,240,.6); animation-duration: 2.4s; }
+#pnm-2 .pnm-wave { animation-duration: 3.6s; }
+#pnm-3 .pnm-wave { stroke: rgba(255,179,0,.5); animation-duration: 2.8s; }
+
+/* ── Legend ───────────────────────────────────────────────── */
+.pn-legend {
+  display: flex;
+  gap: 24px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+.pnl-item {
   display: flex;
   align-items: center;
-  gap: 10px;
-  margin-top: 4px;
-  justify-content: flex-end;
-  padding-right: 4px;
-}
-.bt-label {
+  gap: 6px;
   font-family: var(--f-mono);
-  font-size: .6rem;
+  font-size: .55rem;
   color: var(--text-d);
   letter-spacing: .08em;
 }
-.bt-resistor {
-  width: 36px; height: 12px;
-  border: 1.5px solid var(--g-dim);
-  background: repeating-linear-gradient(
-    90deg,
-    var(--g-dim) 0, var(--g-dim) 3px,
-    transparent  3px, transparent 6px
-  );
-  border-radius: 2px;
+.pnl-dot {
+  width: 6px; height: 6px;
+  border-radius: 50%;
 }
+.pnl-dot.green { background: var(--g); box-shadow: 0 0 4px var(--g); }
+.pnl-dot.cyan  { background: var(--c); box-shadow: 0 0 4px var(--c); }
+.pnl-dot.amber { background: var(--amber); box-shadow: 0 0 4px var(--amber); }
 
-/* ── Signal pulse overlay (on hover — JS adds class) ──────────── */
-.bus-node.pulse-active .bus-pad {
-  animation: pad-pulse .6s var(--ease-out) forwards;
-}
-@keyframes pad-pulse {
-  0%   { box-shadow: 0 0 6px var(--g); }
-  50%  { box-shadow: 0 0 22px var(--g), 0 0 40px rgba(0,232,122,.5); background: var(--g); }
-  100% { box-shadow: 0 0 10px var(--g); background: var(--g); }
-}
+/* ── Module hover — trace brightens via JS adding .active ─── */
+.pn-module:hover ~ .pn-svg .pn-trace,
+.pn-module:focus-within ~ .pn-svg .pn-trace { /* handled in JS */ }
 
-/* ── Reveal state (JS removes .hidden-node) ─────────────────── */
-.reveal-node {
-  opacity: 0;
-  /* GSAP handles transform */
-}
-
-/* ── MOBILE: stack vertically ──────────────────────────────── */
+/* ── MOBILE: single-column stack ──────────────────────────── */
 @media (max-width: 700px) {
-  .bus-spine { display: none; }
-  .bus-nodes {
+  .pn-wrap {
+    min-height: unset;
     display: flex;
     flex-direction: column;
     gap: 0;
-    padding: 0;
+    padding-left: 28px;
     border-left: 2px solid var(--g-dim);
-    margin-left: 16px;
   }
-  .bus-node {
-    position: static !important;
-    display: block !important;
-    margin-bottom: 24px;
-    padding-left: 20px;
-  }
-  .bus-node[data-dir="up"] .bus-node-inner,
-  .bus-node[data-dir="down"] .bus-node-inner {
-    position: static;
-    flex-direction: row;
-    align-items: flex-start;
+  .pn-svg { display: none; }
+  .pn-cpu {
+    position: relative;
+    top: auto; left: auto;
     transform: none;
-    bottom: auto; top: auto;
-    gap: 10px;
+    margin: 0 0 20px 0;
+    align-self: flex-start;
+    width: 80px; height: 80px;
   }
-  .branch-trace { display: none; }
-  .bus-pad {
-    margin-left: -26px;
-    margin-top: 14px;
-    flex-shrink: 0;
+  .pn-cpu-ring.r1 { width: 80px;  height: 80px;  }
+  .pn-cpu-ring.r2 { width: 64px;  height: 64px;  }
+  .pn-cpu-ring.r3 { width: 48px;  height: 48px;  }
+  .pn-cpu-core { width: 38px; height: 38px; }
+  .pn-cpu-label { font-size: .42rem; }
+  .pn-cpu-id    { font-size: .52rem; }
+  .pn-cpu-hz    { display: none; }
+  .pn-cpu-pins  { display: none; }
+
+  .pn-module {
+    position: relative;
+    top: auto !important; left: auto !important;
+    width: 100%;
+    margin-bottom: 16px;
+    opacity: 1;
+    transform: none;
   }
-  .bus-card {
-    max-width: 100%;
-  }
-  .bus-terminator { display: none; }
+  .pnt-sep { display: none; }
+  .pnt-item { padding: 4px 8px; }
 }
 
-
+@media (max-width: 420px) {
+  .pn-telemetry { gap: 0; padding: 6px 10px; }
+  .pn-wrap { padding-left: 18px; }
+}
 /* ══════════════════════════════════════════════════════════════
    SECTION: FIRMWARE LIBRARY  (#firmware)
    ══════════════════════════════════════════════════════════════ */
@@ -1656,7 +1773,6 @@ button{cursor:pointer;font:inherit;border:none;background:none}
   opacity: 0;
   transform: translateX(-24px);
 }
-
 /* ── MOBILE responsive ───────────────────────────────────────── */
 @media (max-width: 640px) {
   .fw-slot {

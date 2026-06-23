@@ -9,6 +9,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Rajdhani:wght@300;400;600;700&display=swap" rel="stylesheet"/>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/MotionPathPlugin.min.js"></script>
 </head>
 <body>
 
@@ -190,6 +191,8 @@
         <li><a href="#projects" class="nlink">PROJECTS</a></li>
         <li><a href="#research" class="nlink">RESEARCH</a></li>
         <li><a href="#contact"  class="nlink">CONTACT</a></li>
+        <li><a href="#comms" class="nlink">CLUBS</a></li>
+        <li><a href="#firmware" class="nlink">CERTS</a></li>
       </ul>
       <div class="nav-live" aria-hidden="true">
         <span class="live-dot"></span><span>LIVE</span>
@@ -423,181 +426,324 @@
 
 
 <!-- ─────────────────────────────────
-     COMMUNICATION BUS — Clubs & Chapters
-     Concept: Processor ↔ External modules via comm bus
-     ADD_NEW_ORG_HERE — copy one .bus-node block
+     PCB ROUTING NETWORK — Clubs & Chapters
+     Concept: Central CPU ↔ PCB Traces ↔ Module Nodes
+     ADD_NEW_ORG_HERE — copy one .pn-module block
 ───────────────────────────────── -->
-<section id="comms" class="sec">
-  <div class="sec-inner">
-    <p class="sec-badge">COMM_BUS::I2C_SPI</p>
-    <h2 class="sec-title">COMMUNICATION <span class="ac">BUS</span></h2>
-    <div class="sec-rule"></div>
+  <section id="comms" class="sec">
+    <div class="sec-inner">
+      <p class="sec-badge">PCB_NET::ROUTING_LAYER_2</p>
+      <h2 class="sec-title">PCB ROUTING <span class="ac">NETWORK</span></h2>
+      <div class="sec-rule"></div>
 
-    <div class="bus-layout">
+      <!-- Network telemetry bar -->
+      <div class="pn-telemetry" aria-hidden="true">
+        <div class="pnt-item">
+          <span class="pnt-label">NET_STATUS</span>
+          <span class="pnt-val pnt-green">ACTIVE</span>
+        </div>
+        <div class="pnt-sep"></div>
+        <div class="pnt-item">
+          <span class="pnt-label">NODES</span>
+          <span class="pnt-val" id="pnt-nodes">04</span>
+        </div>
+        <div class="pnt-sep"></div>
+        <div class="pnt-item">
+          <span class="pnt-label">BUS_UTIL</span>
+          <span class="pnt-val" id="pnt-util">0%</span>
+        </div>
+        <div class="pnt-sep"></div>
+        <div class="pnt-item">
+          <span class="pnt-label">PKT_TX</span>
+          <span class="pnt-val" id="pnt-pkt">0000</span>
+        </div>
+        <div class="pnt-sep"></div>
+        <div class="pnt-item">
+          <span class="pnt-label">CLK</span>
+          <span class="pnt-val pnt-cyan" id="pnt-clk">48MHz</span>
+        </div>
+      </div>
 
-      <!-- Central horizontal bus spine -->
-      <div class="bus-spine" aria-hidden="true">
-        <svg class="bus-spine-svg" id="bus-spine-svg"
-             viewBox="0 0 900 20" preserveAspectRatio="none">
-          <!-- Main bus rail — drawn by GSAP on scroll -->
-          <line id="bus-rail" x1="0" y1="10" x2="900" y2="10"
-                stroke="var(--g)" stroke-width="2.5"
-                stroke-dasharray="900" stroke-dashoffset="900"/>
-          <!-- Bus clock tick marks -->
-          <g id="bus-ticks" opacity="0">
-            <line x1="100" y1="4" x2="100" y2="16" stroke="var(--g-dim)" stroke-width="1"/>
-            <line x1="200" y1="4" x2="200" y2="16" stroke="var(--g-dim)" stroke-width="1"/>
-            <line x1="300" y1="4" x2="300" y2="16" stroke="var(--g-dim)" stroke-width="1"/>
-            <line x1="400" y1="4" x2="400" y2="16" stroke="var(--g-dim)" stroke-width="1"/>
-            <line x1="500" y1="4" x2="500" y2="16" stroke="var(--g-dim)" stroke-width="1"/>
-            <line x1="600" y1="4" x2="600" y2="16" stroke="var(--g-dim)" stroke-width="1"/>
-            <line x1="700" y1="4" x2="700" y2="16" stroke="var(--g-dim)" stroke-width="1"/>
-            <line x1="800" y1="4" x2="800" y2="16" stroke="var(--g-dim)" stroke-width="1"/>
-          </g>
-          <!-- Signal pulse — animated dot that travels bus -->
-          <circle id="bus-pulse" cx="0" cy="10" r="5"
-                  fill="var(--g)" opacity="0"
-                  style="filter:drop-shadow(0 0 6px var(--g))"/>
+      <!-- Main network canvas -->
+      <div class="pn-wrap" id="pn-wrap">
+
+        <!-- SVG trace layer — drawn behind everything -->
+        <svg class="pn-svg" id="pn-svg" aria-hidden="true">
+          <!-- Traces drawn dynamically by JS -->
         </svg>
+
+        <!-- Central CPU node -->
+        <div class="pn-cpu" id="pn-cpu" aria-label="Central processor — your engineering identity">
+          <div class="pn-cpu-ring r1" aria-hidden="true"></div>
+          <div class="pn-cpu-ring r2" aria-hidden="true"></div>
+          <div class="pn-cpu-ring r3" aria-hidden="true"></div>
+          <div class="pn-cpu-core">
+            <div class="pn-cpu-label">CPU</div>
+            <div class="pn-cpu-id">AG_v2</div>
+            <div class="pn-cpu-hz">ECE</div>
+          </div>
+          <div class="pn-cpu-pins" aria-hidden="true">
+            <span></span><span></span><span></span><span></span>
+            <span></span><span></span><span></span><span></span>
+          </div>
+        </div>
+
+        <!-- Module nodes — positions computed by JS -->
+        <!-- ADD_NEW_ORG_HERE: copy one .pn-module block, JS handles positioning automatically -->
+
+        <!-- MODULE 01 -->
+        <div class="pn-module reveal-pnm" id="pnm-0"
+            role="article" aria-label="IEEE Student Branch"
+            tabindex="0">
+          <div class="pnm-inner">
+            <div class="pnm-led" aria-hidden="true"></div>
+            <div class="pnm-corner tl" aria-hidden="true"></div>
+            <div class="pnm-corner tr" aria-hidden="true"></div>
+            <div class="pnm-corner bl" aria-hidden="true"></div>
+            <div class="pnm-corner br" aria-hidden="true"></div>
+            <p class="pnm-addr">MOD_01</p>
+            <h3 class="pnm-name">IEEE Student Branch</h3>
+            <p class="pnm-role">Member</p>
+            <p class="pnm-desc">Engaged in IEEE technical workshops and seminars on emerging electronics domains.</p>
+            <div class="pnm-footer">
+              <div class="pnm-signal">
+                <div class="pnm-sig-bar" data-strength="4"></div>
+              </div>
+              <span class="pnm-status">ONLINE</span>
+            </div>
+          </div>
+          <!-- Mini oscilloscope -->
+          <div class="pnm-osc" aria-hidden="true">
+            <svg class="pnm-osc-svg" viewBox="0 0 80 24">
+              <polyline class="pnm-wave" points="0,12 10,12 13,4 17,20 20,12 30,12 33,4 37,20 40,12 50,12 53,4 57,20 60,12 80,12"/>
+            </svg>
+          </div>
+        </div>
+
+        <!-- MODULE 02 -->
+        <div class="pn-module reveal-pnm" id="pnm-1"
+            role="article" aria-label="Robotics Club"
+            tabindex="0">
+          <div class="pnm-inner">
+            <div class="pnm-led" aria-hidden="true"></div>
+            <div class="pnm-corner tl" aria-hidden="true"></div>
+            <div class="pnm-corner tr" aria-hidden="true"></div>
+            <div class="pnm-corner bl" aria-hidden="true"></div>
+            <div class="pnm-corner br" aria-hidden="true"></div>
+            <p class="pnm-addr">MOD_02</p>
+            <h3 class="pnm-name">Robotics Club</h3>
+            <p class="pnm-role">Core Member</p>
+            <p class="pnm-desc">Built autonomous systems integrating sensor fusion, motor control, and real-time feedback loops.</p>
+            <div class="pnm-footer">
+              <div class="pnm-signal">
+                <div class="pnm-sig-bar" data-strength="5"></div>
+              </div>
+              <span class="pnm-status">ONLINE</span>
+            </div>
+          </div>
+          <div class="pnm-osc" aria-hidden="true">
+            <svg class="pnm-osc-svg" viewBox="0 0 80 24">
+              <polyline class="pnm-wave" points="0,12 8,12 10,2 14,22 17,12 25,12 27,2 31,22 34,12 42,12 44,2 48,22 51,12 80,12"/>
+            </svg>
+          </div>
+        </div>
+
+        <!-- MODULE 03 -->
+        <div class="pn-module reveal-pnm" id="pnm-2"
+            role="article" aria-label="Electronics Society"
+            tabindex="0">
+          <div class="pnm-inner">
+            <div class="pnm-led" aria-hidden="true"></div>
+            <div class="pnm-corner tl" aria-hidden="true"></div>
+            <div class="pnm-corner tr" aria-hidden="true"></div>
+            <div class="pnm-corner bl" aria-hidden="true"></div>
+            <div class="pnm-corner br" aria-hidden="true"></div>
+            <p class="pnm-addr">MOD_03</p>
+            <h3 class="pnm-name">Electronics Society</h3>
+            <p class="pnm-role">Technical Lead</p>
+            <p class="pnm-desc">Led hardware lab sessions and mentored juniors on PCB design workflows.</p>
+            <div class="pnm-footer">
+              <div class="pnm-signal">
+                <div class="pnm-sig-bar" data-strength="5"></div>
+              </div>
+              <span class="pnm-status">ONLINE</span>
+            </div>
+          </div>
+          <div class="pnm-osc" aria-hidden="true">
+            <svg class="pnm-osc-svg" viewBox="0 0 80 24">
+              <polyline class="pnm-wave" points="0,12 12,12 15,6 19,18 22,12 34,12 37,6 41,18 44,12 56,12 59,6 63,18 66,12 80,12"/>
+            </svg>
+          </div>
+        </div>
+
+        <!-- MODULE 04 -->
+        <div class="pn-module reveal-pnm" id="pnm-3"
+            role="article" aria-label="Hackathon Chapter"
+            tabindex="0">
+          <div class="pnm-inner">
+            <div class="pnm-led" aria-hidden="true"></div>
+            <div class="pnm-corner tl" aria-hidden="true"></div>
+            <div class="pnm-corner tr" aria-hidden="true"></div>
+            <div class="pnm-corner bl" aria-hidden="true"></div>
+            <div class="pnm-corner br" aria-hidden="true"></div>
+            <p class="pnm-addr">MOD_04</p>
+            <h3 class="pnm-name">Hackathon Chapter</h3>
+            <p class="pnm-role">Team Captain</p>
+            <p class="pnm-desc">Captained cross-disciplinary teams at national-level hackathons integrating embedded hardware with software stacks.</p>
+            <div class="pnm-footer">
+              <div class="pnm-signal">
+                <div class="pnm-sig-bar" data-strength="3"></div>
+              </div>
+              <span class="pnm-status">ONLINE</span>
+            </div>
+          </div>
+          <div class="pnm-osc" aria-hidden="true">
+            <svg class="pnm-osc-svg" viewBox="0 0 80 24">
+              <polyline class="pnm-wave" points="0,12 6,12 9,8 13,16 16,12 26,12 29,8 33,16 36,12 46,12 49,8 53,16 56,12 80,12"/>
+            </svg>
+          </div>
+        </div>
+
+      </div><!-- /pn-wrap -->
+
+      <!-- Footer legend -->
+      <div class="pn-legend" aria-hidden="true">
+        <span class="pnl-item"><span class="pnl-dot green"></span>Active trace</span>
+        <span class="pnl-item"><span class="pnl-dot cyan"></span>Signal pulse</span>
+        <span class="pnl-item"><span class="pnl-dot amber"></span>Clock edge</span>
       </div>
 
-      <!-- Org nodes grid — nodes branch UP and DOWN alternately -->
-      <div class="bus-nodes" id="bus-nodes">
+    </div>
+  </section>
 
-        <!-- ══ ADD_NEW_ORG_HERE ══
-             Copy one .bus-node block below.
-             Alternate data-dir="up" and data-dir="down"
-             for above/below bus placement.
-        ═══════════════════════════ -->
+  <!-- ─────────────────────────────────
+       PROJECTS
+  ───────────────────────────────── -->
+  <section id="projects" class="sec">
+    <div class="sec-inner">
+      <p class="sec-badge">COMP_BANK::IC_MODULES</p>
+      <h2 class="sec-title">PROJECTS <span class="ac">IC BANK</span></h2>
+      <div class="sec-rule"></div>
 
-        <!-- NODE 01 — Example: IEEE Student Branch -->
-        <div class="bus-node reveal-node" data-dir="up" data-index="0">
-          <div class="bus-node-inner">
-            <!-- Branch trace line (drawn by GSAP) -->
-            <svg class="branch-trace" viewBox="0 0 2 60" preserveAspectRatio="none" aria-hidden="true">
-              <line class="branch-line" x1="1" y1="0" x2="1" y2="60"
-                    stroke="var(--g)" stroke-width="1.5"
-                    stroke-dasharray="60" stroke-dashoffset="60"/>
-            </svg>
-            <!-- Node pad (solder point on trace) -->
-            <div class="bus-pad" aria-hidden="true"></div>
-            <!-- Node content card -->
-            <div class="bus-card" role="article" aria-label="IEEE Student Branch">
-              <div class="bc-corner tl" aria-hidden="true"></div>
-              <div class="bc-corner tr" aria-hidden="true"></div>
-              <div class="bc-corner bl" aria-hidden="true"></div>
-              <div class="bc-corner br" aria-hidden="true"></div>
-              <p class="bc-addr">NODE_01</p>
-              <h3 class="bc-name">IEEE Student Branch</h3>
-              <!-- REPLACE with your actual position -->
-              <p class="bc-pos">Member</p>
-              <!-- REPLACE with your actual one-line description -->
-              <p class="bc-desc">Engaged in IEEE technical workshops and seminars on emerging electronics domains.</p>
-              <div class="bc-status">
-                <span class="bc-dot" aria-hidden="true"></span>
-                <span class="bc-online">CONNECTED</span>
+      <div class="ic-grid">
+
+        <!-- ADD_NEW_PROJECT_HERE — copy one ic-card block -->
+
+        <div class="ic-card reveal">
+          <div class="ic-body">
+            <div class="ic-pins lp" aria-hidden="true">
+              <span class="pin" data-l="VCC"></span><span class="pin" data-l="GND"></span>
+              <span class="pin" data-l="CLK"></span><span class="pin" data-l="RST"></span>
+            </div>
+            <div class="ic-mid">
+              <div class="ic-notch" aria-hidden="true"></div>
+              <p class="ic-ref">IC — 001</p>
+              <h3 class="ic-name">DermaVisage<br>Patch</h3>
+              <div class="ic-tags">
+                <span>KiCAD</span><span>UPDI</span><span>NFC</span>
               </div>
+              <p class="ic-hint">TAP TO EXPAND</p>
+            </div>
+            <div class="ic-pins rp" aria-hidden="true">
+              <span class="pin" data-l="OUT"></span><span class="pin" data-l="EN"></span>
+              <span class="pin" data-l="INT"></span><span class="pin" data-l="PWR"></span>
+            </div>
+          </div>
+          <div class="ic-detail">
+            <div class="icd-bar">
+              <span>IC_001 // DermaVisage</span>
+              <button class="icd-x" aria-label="Close">✕</button>
+            </div>
+            <p class="icd-desc">
+              Built an NFC-powered, single-use dermal analysis patch featuring a custom 30mm circular PCB, ATTiny MCU, on-skin sensor electrodes, and smartphone-triggered data readout via web interface. 
+            </p>
+            <div class="icd-stack">
+              <span>KiCAD</span><span>UPDI (ATTiny202)</span><span>NFC(STV25)</span>
+            </div>
+            <div class="icd-links">
+              <a href="https://github.com/aadigelani/dermasense" class="icd-a">[ GitHub ]</a>
+              <a href="#" class="icd-a demo">[ Demo ]</a>
             </div>
           </div>
         </div>
 
-        <!-- NODE 02 — Example: Robotics Club -->
-        <div class="bus-node reveal-node" data-dir="down" data-index="1">
-          <div class="bus-node-inner">
-            <div class="bus-pad" aria-hidden="true"></div>
-            <svg class="branch-trace" viewBox="0 0 2 60" preserveAspectRatio="none" aria-hidden="true">
-              <line class="branch-line" x1="1" y1="0" x2="1" y2="60"
-                    stroke="var(--g)" stroke-width="1.5"
-                    stroke-dasharray="60" stroke-dashoffset="60"/>
-            </svg>
-            <div class="bus-card" role="article" aria-label="Robotics Club">
-              <div class="bc-corner tl" aria-hidden="true"></div>
-              <div class="bc-corner tr" aria-hidden="true"></div>
-              <div class="bc-corner bl" aria-hidden="true"></div>
-              <div class="bc-corner br" aria-hidden="true"></div>
-              <p class="bc-addr">NODE_02</p>
-              <h3 class="bc-name">Robotics Club</h3>
-              <!-- REPLACE with your actual position -->
-              <p class="bc-pos">Core Member</p>
-              <!-- REPLACE with your actual one-line description -->
-              <p class="bc-desc">Built autonomous systems integrating sensor fusion, motor control, and real-time feedback loops.</p>
-              <div class="bc-status">
-                <span class="bc-dot" aria-hidden="true"></span>
-                <span class="bc-online">CONNECTED</span>
+        <div class="ic-card reveal">
+          <div class="ic-body">
+            <div class="ic-pins lp" aria-hidden="true">
+              <span class="pin" data-l="VCC"></span><span class="pin" data-l="GND"></span>
+              <span class="pin" data-l="SDA"></span><span class="pin" data-l="SCL"></span>
+            </div>
+            <div class="ic-mid">
+              <div class="ic-notch" aria-hidden="true"></div>
+              <p class="ic-ref">IC — 002</p>
+              <h3 class="ic-name">CrackCellA<br>Device</h3>
+              <div class="ic-tags">
+                <span>ESP32</span><span>KiCAD</span><span>AutoFusion</span>
               </div>
+              <p class="ic-hint">TAP TO EXPAND</p>
+            </div>
+            <div class="ic-pins rp" aria-hidden="true">
+              <span class="pin" data-l="TX"></span><span class="pin" data-l="RX"></span>
+              <span class="pin" data-l="ADC"></span><span class="pin" data-l="PWM"></span>
+            </div>
+          </div>
+          <div class="ic-detail">
+            <div class="icd-bar">
+              <span>IC_002 // CrackCellA</span>
+              <button class="icd-x" aria-label="Close">✕</button>
+            </div>
+            <p class="icd-desc">
+              Developed an ESP32-based battery analyzer implementing high-side Kelvin current sensing and MOSFET-controlled load profiling.
+            </p>
+            <div class="icd-stack">
+              <span>ESP32</span><span>Power Management</span><span>KiCAD</span><span>AutoFusion</span>
+            </div>
+            <div class="icd-links">
+              <a href="#" class="icd-a">[ GitHub ]</a>
+              <a href="#" class="icd-a demo">[ Demo ]</a>
             </div>
           </div>
         </div>
-
-        <!-- NODE 03 — Example: Electronics Society -->
-        <div class="bus-node reveal-node" data-dir="up" data-index="2">
-          <div class="bus-node-inner">
-            <svg class="branch-trace" viewBox="0 0 2 60" preserveAspectRatio="none" aria-hidden="true">
-              <line class="branch-line" x1="1" y1="0" x2="1" y2="60"
-                    stroke="var(--g)" stroke-width="1.5"
-                    stroke-dasharray="60" stroke-dashoffset="60"/>
-            </svg>
-            <div class="bus-pad" aria-hidden="true"></div>
-            <div class="bus-card" role="article" aria-label="Electronics Society">
-              <div class="bc-corner tl" aria-hidden="true"></div>
-              <div class="bc-corner tr" aria-hidden="true"></div>
-              <div class="bc-corner bl" aria-hidden="true"></div>
-              <div class="bc-corner br" aria-hidden="true"></div>
-              <p class="bc-addr">NODE_03</p>
-              <h3 class="bc-name">Electronics Society</h3>
-              <!-- REPLACE with your actual position -->
-              <p class="bc-pos">Technical Lead</p>
-              <!-- REPLACE with your actual one-line description -->
-              <p class="bc-desc">Led hardware lab sessions and mentored juniors on PCB design workflows.</p>
-              <div class="bc-status">
-                <span class="bc-dot" aria-hidden="true"></span>
-                <span class="bc-online">CONNECTED</span>
+        <div class="ic-card reveal">
+          <div class="ic-body">
+            <div class="ic-pins lp" aria-hidden="true">
+              <span class="pin" data-l="VCC"></span><span class="pin" data-l="GND"></span>
+              <span class="pin" data-l="CLK"></span><span class="pin" data-l="RST"></span>
+            </div>
+            <div class="ic-mid">
+              <div class="ic-notch" aria-hidden="true"></div>
+              <p class="ic-ref">IC — 003</p>
+              <h3 class="ic-name">MINT<br>Monitoring Irregularities in Navigation Terrain</h3>
+              <div class="ic-tags">
+                <span>Frontend</span><span>Integration</span><span>Leadership</span>
               </div>
+              <p class="ic-hint">TAP TO EXPAND</p>
+            </div>
+            <div class="ic-pins rp" aria-hidden="true">
+              <span class="pin" data-l="OUT"></span><span class="pin" data-l="EN"></span>
+              <span class="pin" data-l="INT"></span><span class="pin" data-l="PWR"></span>
+            </div>
+          </div>
+          <div class="ic-detail">
+            <div class="icd-bar">
+              <span>IC_003 // MINT</span>
+              <button class="icd-x" aria-label="Close">✕</button>
+            </div>
+            <p class="icd-desc">
+              Led and engineered MINT, a real-time kinetic tracking system—building the Frontend on HTML, JS, CSS and integrating hardware, frontend, and cloud into a cohesive product. 
+            </p>
+            <div class="icd-stack">
+              <span>Firebase</span><span>Python</span><span>Frontend</span><span>Team Leader</span>
+            </div>
+            <div class="icd-links">
+              <a href="https://github.com/aadigelani/kineticroadhealth" class="icd-a">[ GitHub ]</a>
+              <a href="https://youtube.com/shorts/Yp9ctYSXIss?si=oOgECw_GbyLYfXlP" class="icd-a demo">[ Demo ]</a>
             </div>
           </div>
         </div>
-
-        <!-- NODE 04 — Example: Hackathon Chapter -->
-        <div class="bus-node reveal-node" data-dir="down" data-index="3">
-          <div class="bus-node-inner">
-            <div class="bus-pad" aria-hidden="true"></div>
-            <svg class="branch-trace" viewBox="0 0 2 60" preserveAspectRatio="none" aria-hidden="true">
-              <line class="branch-line" x1="1" y1="0" x2="1" y2="60"
-                    stroke="var(--g)" stroke-width="1.5"
-                    stroke-dasharray="60" stroke-dashoffset="60"/>
-            </svg>
-            <div class="bus-card" role="article" aria-label="Hackathon Chapter">
-              <div class="bc-corner tl" aria-hidden="true"></div>
-              <div class="bc-corner tr" aria-hidden="true"></div>
-              <div class="bc-corner bl" aria-hidden="true"></div>
-              <div class="bc-corner br" aria-hidden="true"></div>
-              <p class="bc-addr">NODE_04</p>
-              <h3 class="bc-name">Hackathon Chapter</h3>
-              <!-- REPLACE with your actual position -->
-              <p class="bc-pos">Team Captain</p>
-              <!-- REPLACE with your actual one-line description -->
-              <p class="bc-desc">Captained cross-disciplinary teams at national-level hackathons, integrating embedded hardware with software stacks.</p>
-              <div class="bc-status">
-                <span class="bc-dot" aria-hidden="true"></span>
-                <span class="bc-online">CONNECTED</span>
-              </div>
-            </div>
-          </div>
-        </div>
-
-      </div><!-- /bus-nodes -->
-
-      <!-- Bus terminator -->
-      <div class="bus-terminator" aria-hidden="true">
-        <span class="bt-label">BUS_END</span>
-        <div class="bt-resistor"></div>
       </div>
-
-    </div><!-- /bus-layout -->
-  </div>
-</section>
-
-
+    </div>
+  </section>
 <!-- ─────────────────────────────────
      FIRMWARE LIBRARY — Certifications
      Concept: Certifications = firmware upgrades
@@ -772,134 +918,6 @@
         </div>
 
       </div><!-- /fw-rack -->
-    </div>
-  </section>
-  <!-- ─────────────────────────────────
-       PROJECTS
-  ───────────────────────────────── -->
-  <section id="projects" class="sec">
-    <div class="sec-inner">
-      <p class="sec-badge">COMP_BANK::IC_MODULES</p>
-      <h2 class="sec-title">PROJECTS <span class="ac">IC BANK</span></h2>
-      <div class="sec-rule"></div>
-
-      <div class="ic-grid">
-
-        <!-- ADD_NEW_PROJECT_HERE — copy one ic-card block -->
-
-        <div class="ic-card reveal">
-          <div class="ic-body">
-            <div class="ic-pins lp" aria-hidden="true">
-              <span class="pin" data-l="VCC"></span><span class="pin" data-l="GND"></span>
-              <span class="pin" data-l="CLK"></span><span class="pin" data-l="RST"></span>
-            </div>
-            <div class="ic-mid">
-              <div class="ic-notch" aria-hidden="true"></div>
-              <p class="ic-ref">IC — 001</p>
-              <h3 class="ic-name">DermaVisage<br>Patch</h3>
-              <div class="ic-tags">
-                <span>KiCAD</span><span>UPDI</span><span>NFC</span>
-              </div>
-              <p class="ic-hint">TAP TO EXPAND</p>
-            </div>
-            <div class="ic-pins rp" aria-hidden="true">
-              <span class="pin" data-l="OUT"></span><span class="pin" data-l="EN"></span>
-              <span class="pin" data-l="INT"></span><span class="pin" data-l="PWR"></span>
-            </div>
-          </div>
-          <div class="ic-detail">
-            <div class="icd-bar">
-              <span>IC_001 // DermaVisage</span>
-              <button class="icd-x" aria-label="Close">✕</button>
-            </div>
-            <p class="icd-desc">
-              Built an NFC-powered, single-use dermal analysis patch featuring a custom 30mm circular PCB, ATTiny MCU, on-skin sensor electrodes, and smartphone-triggered data readout via web interface. 
-            </p>
-            <div class="icd-stack">
-              <span>KiCAD</span><span>UPDI (ATTiny202)</span><span>NFC(STV25)</span>
-            </div>
-            <div class="icd-links">
-              <a href="https://github.com/aadigelani/dermasense" class="icd-a">[ GitHub ]</a>
-              <a href="#" class="icd-a demo">[ Demo ]</a>
-            </div>
-          </div>
-        </div>
-
-        <div class="ic-card reveal">
-          <div class="ic-body">
-            <div class="ic-pins lp" aria-hidden="true">
-              <span class="pin" data-l="VCC"></span><span class="pin" data-l="GND"></span>
-              <span class="pin" data-l="SDA"></span><span class="pin" data-l="SCL"></span>
-            </div>
-            <div class="ic-mid">
-              <div class="ic-notch" aria-hidden="true"></div>
-              <p class="ic-ref">IC — 002</p>
-              <h3 class="ic-name">CrackCellA<br>Device</h3>
-              <div class="ic-tags">
-                <span>ESP32</span><span>KiCAD</span><span>AutoFusion</span>
-              </div>
-              <p class="ic-hint">TAP TO EXPAND</p>
-            </div>
-            <div class="ic-pins rp" aria-hidden="true">
-              <span class="pin" data-l="TX"></span><span class="pin" data-l="RX"></span>
-              <span class="pin" data-l="ADC"></span><span class="pin" data-l="PWM"></span>
-            </div>
-          </div>
-          <div class="ic-detail">
-            <div class="icd-bar">
-              <span>IC_002 // CrackCellA</span>
-              <button class="icd-x" aria-label="Close">✕</button>
-            </div>
-            <p class="icd-desc">
-              Developed an ESP32-based battery analyzer implementing high-side Kelvin current sensing and MOSFET-controlled load profiling.
-            </p>
-            <div class="icd-stack">
-              <span>ESP32</span><span>Power Management</span><span>KiCAD</span><span>AutoFusion</span>
-            </div>
-            <div class="icd-links">
-              <a href="#" class="icd-a">[ GitHub ]</a>
-              <a href="#" class="icd-a demo">[ Demo ]</a>
-            </div>
-          </div>
-        </div>
-        <div class="ic-card reveal">
-          <div class="ic-body">
-            <div class="ic-pins lp" aria-hidden="true">
-              <span class="pin" data-l="VCC"></span><span class="pin" data-l="GND"></span>
-              <span class="pin" data-l="CLK"></span><span class="pin" data-l="RST"></span>
-            </div>
-            <div class="ic-mid">
-              <div class="ic-notch" aria-hidden="true"></div>
-              <p class="ic-ref">IC — 003</p>
-              <h3 class="ic-name">MINT<br>Monitoring Irregularities in Navigation Terrain</h3>
-              <div class="ic-tags">
-                <span>Frontend</span><span>Integration</span><span>Leadership</span>
-              </div>
-              <p class="ic-hint">TAP TO EXPAND</p>
-            </div>
-            <div class="ic-pins rp" aria-hidden="true">
-              <span class="pin" data-l="OUT"></span><span class="pin" data-l="EN"></span>
-              <span class="pin" data-l="INT"></span><span class="pin" data-l="PWR"></span>
-            </div>
-          </div>
-          <div class="ic-detail">
-            <div class="icd-bar">
-              <span>IC_003 // MINT</span>
-              <button class="icd-x" aria-label="Close">✕</button>
-            </div>
-            <p class="icd-desc">
-              Led and engineered MINT, a real-time kinetic tracking system—building the Frontend on HTML, JS, CSS and integrating hardware, frontend, and cloud into a cohesive product. 
-            </p>
-            <div class="icd-stack">
-              <span>Firebase</span><span>Python</span><span>Frontend</span><span>Team Leader</span>
-            </div>
-            <div class="icd-links">
-              <a href="https://github.com/aadigelani/kineticroadhealth" class="icd-a">[ GitHub ]</a>
-              <a href="https://youtube.com/shorts/Yp9ctYSXIss?si=oOgECw_GbyLYfXlP" class="icd-a demo">[ Demo ]</a>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   </section>
 

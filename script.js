@@ -424,7 +424,7 @@ const ScrollSystem = (() => {
       document.querySelectorAll('.reveal').forEach(el => el.classList.add('vis'));
       return;
     }
-    gsap.registerPlugin(ScrollTrigger);
+    gsap.registerPlugin(ScrollTrigger, MotionPathPlugin);
 
     // ── Section headers ───────────────────────────────────────
     document.querySelectorAll('.sec-badge,.sec-title,.sec-rule').forEach(el => {
@@ -715,142 +715,345 @@ function debounce(fn, ms) {
 
 
 /* ══════════════════════════════════════════════════════════════
-   MODULE: CommBusSystem
-   Handles Communication Bus section animations:
-   - Bus rail draw animation (ScrollTrigger)
-   - Branch trace draw per node (staggered)
-   - Node card reveal (staggered fade+slide)
-   - Hover: signal pulse travels branch trace
-   - Signal dot travels bus rail on section enter
+   MODULE: PCBNetSystem
+   PCB Routing Network — Clubs & Chapters
+   Architecture:
+   - CPU node at center; module nodes in equal-angle ring
+   - SVG orthogonal (right-angle) PCB traces between CPU & modules
+   - Animated signal pulses travel traces via GSAP motion-path
+   - ScrollTrigger reveals: traces draw first, then nodes appear
+   - Hover: pulse fires CPU→module; trace brightens
+   - Telemetry bar: live packet counter + bus utilisation
    ══════════════════════════════════════════════════════════════ */
-const CommBusSystem = (() => {
+const PCBNetSystem = (() => {
+
+  /* ── Config ─────────────────────────────────────────────────── */
+  const RING_RADIUS_FACTOR = 0.34;   // fraction of wrap width
+  const MIN_RADIUS         = 180;    // px
+  const MAX_RADIUS         = 280;    // px
+  const MODULE_W           = 200;    // must match CSS .pn-module width
+  const MODULE_H           = 130;    // estimated card height
+  const CPU_SIZE           = 120;
+  const PULSE_INTERVAL     = 1800;   // ms between auto pulses
+  let   _pktCount          = 0;
+  let   _pulseTimer        = null;
+  let   _traces            = [];     // { el, pathEl, len, modIdx }
+  let   _revealed          = false;
 
   function init() {
-    const section   = document.getElementById('comms');
-    const busRail   = document.getElementById('bus-rail');
-    const busTicks  = document.getElementById('bus-ticks');
-    const busPulse  = document.getElementById('bus-pulse');
-    const busNodes  = document.querySelectorAll('.bus-node');
-    if (!section || !busRail) return;
+    const section  = document.getElementById('comms');
+    const wrap     = document.getElementById('pn-wrap');
+    const svg      = document.getElementById('pn-svg');
+    const cpuEl    = document.getElementById('pn-cpu');
+    const modules  = Array.from(document.querySelectorAll('.pn-module'));
+    if (!section || !wrap || !svg || !cpuEl || !modules.length) return;
 
-    // ── Position nodes along the bus (left offset) ─────────────
-    // Distribute nodes evenly across the bus spine width
-    _positionNodes(busNodes);
+    _buildSignalBars(modules);
+    _layout(wrap, cpuEl, modules);
+    _buildTraces(svg, wrap, cpuEl, modules);
+    _bindHover(modules);
+    _initScrollTrigger(section, cpuEl, modules);
+    _startTelemetry();
 
-    // ── ScrollTrigger: draw bus rail + reveal nodes ────────────
-    ScrollTrigger.create({
-      trigger: section,
-      start: 'top 65%',
-      once: true,
-      onEnter: () => {
-        // 1. Draw the bus rail
-        gsap.to(busRail, {
-          strokeDashoffset: 0,
-          duration: 1.2,
-          ease: 'power2.out',
-          onComplete: () => {
-            // 2. Show tick marks
-            gsap.to(busTicks, { opacity: 1, duration: .4 });
-            // 3. Send signal pulse across bus
-            _runBusPulse(busPulse);
-          }
-        });
-
-        // 4. Stagger-reveal branch traces + node cards
-        busNodes.forEach((node, i) => {
-          const branchLine = node.querySelector('.branch-line');
-          const card       = node.querySelector('.bus-card');
-
-          setTimeout(() => {
-            // Draw branch trace
-            if (branchLine) {
-              gsap.to(branchLine, {
-                strokeDashoffset: 0,
-                duration: .5,
-                ease: 'power1.out'
-              });
-            }
-            // Fade + slide node card in
-            gsap.to(node, {
-              opacity: 1,
-              y: 0,
-              duration: .5,
-              ease: 'power2.out'
+    // Re-layout on resize (debounced)
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+      clearTimeout(resizeTimer);
+      resizeTimer = setTimeout(() => {
+        if (window.innerWidth > 700) {
+          // Clear old traces
+          while (svg.firstChild) svg.removeChild(svg.firstChild);
+          _traces = [];
+          _layout(wrap, cpuEl, modules);
+          _buildTraces(svg, wrap, cpuEl, modules);
+          if (_revealed) {
+            modules.forEach(m => m.classList.add('pnm-visible'));
+            _traces.forEach(t => {
+              gsap.set(t.pathEl, { strokeDashoffset: 0 });
             });
-          }, 400 + i * 150); // stagger start after rail starts drawing
-        });
-      }
-    });
-
-    // ── Hover: signal pulse from bus → node ─────────────────────
-    busNodes.forEach(node => {
-      node.addEventListener('mouseenter', () => _pulseNode(node));
-      node.addEventListener('focusin',    () => _pulseNode(node));
-    });
-  }
-
-  /* Distribute nodes evenly across the bus container width */
-  function _positionNodes(nodes) {
-    const container = document.getElementById('bus-nodes');
-    if (!container) return;
-
-    const total = nodes.length;
-    nodes.forEach((node, i) => {
-      // percentage offset: evenly distribute, with margins at ends
-      const pct = ((i + 0.5) / total) * 100;
-      node.style.left = `calc(${pct}% - 90px)`; // 90px = half of max-width:180px
-    });
-  }
-
-  /* Animate the signal dot travelling the bus rail */
-  function _runBusPulse(pulse) {
-    if (!pulse) return;
-    const rail = document.getElementById('bus-rail');
-    if (!rail) return;
-
-    const svgEl  = document.getElementById('bus-spine-svg');
-    const svgW   = svgEl ? svgEl.viewBox.baseVal.width : 900; // viewBox width
-
-    gsap.fromTo(pulse,
-      { attr: { cx: 0 }, opacity: 0 },
-      {
-        attr: { cx: svgW },
-        opacity: 1,
-        duration: 1.4,
-        ease: 'power1.inOut',
-        onComplete: () => gsap.to(pulse, { opacity: 0, duration: .3 })
-      }
-    );
-  }
-
-  /* Pulse animation on a single node when hovered */
-  function _pulseNode(node) {
-    // Prevent rapid re-trigger
-    if (node.classList.contains('pulse-active')) return;
-    node.classList.add('pulse-active');
-
-    const branchLine = node.querySelector('.branch-line');
-    if (branchLine) {
-      // Re-animate the trace as a signal flash
-      gsap.fromTo(branchLine,
-        { strokeDashoffset: 60 },
-        {
-          strokeDashoffset: 0,
-          duration: .4,
-          ease: 'power1.out',
-          onComplete: () => {
-            setTimeout(() => node.classList.remove('pulse-active'), 600);
           }
         }
-      );
-    } else {
-      setTimeout(() => node.classList.remove('pulse-active'), 600);
+      }, 200);
+    });
+  }
+
+  /* Build signal-strength bar UI (reads data-strength attr) */
+  function _buildSignalBars(modules) {
+    modules.forEach(mod => {
+      const bar = mod.querySelector('.pnm-sig-bar');
+      if (!bar) return;
+      const strength = parseInt(bar.dataset.strength || '3', 10);
+      bar.innerHTML = '';
+      for (let i = 1; i <= 5; i++) {
+        const b = document.createElement('div');
+        const h = 4 + i * 1.6;
+        b.style.cssText = `
+          width:3px;height:${h}px;border-radius:1px;
+          background:${i <= strength ? 'var(--g)' : 'var(--border)'};
+          box-shadow:${i <= strength ? '0 0 4px var(--g)' : 'none'};
+          align-self:flex-end;
+        `;
+        bar.appendChild(b);
+      }
+    });
+  }
+
+  /* Position CPU at center, modules in equal-angle ring */
+  function _layout(wrap, cpuEl, modules) {
+    if (window.innerWidth <= 700) {
+      // Mobile: static flow, JS does nothing
+      wrap.style.minHeight = '';
+      cpuEl.style.cssText = '';
+      modules.forEach(m => {
+        m.style.position = 'relative';
+        m.style.top = m.style.left = '';
+      });
+      return;
     }
+
+    const W      = wrap.offsetWidth || wrap.getBoundingClientRect().width || 800;
+    const radius = Math.min(MAX_RADIUS, Math.max(MIN_RADIUS, W * RING_RADIUS_FACTOR));
+    const cx     = W / 2;
+    const cy     = radius + CPU_SIZE / 2 + 40;
+    const H      = cy + radius + MODULE_H + 20;
+
+    wrap.style.minHeight = H + 'px';
+
+    // CPU
+    cpuEl.style.position  = 'absolute';
+    cpuEl.style.left      = (cx - CPU_SIZE / 2) + 'px';
+    cpuEl.style.top       = (cy - CPU_SIZE / 2) + 'px';
+    cpuEl.style.transform = 'none';
+
+    // Modules — evenly around the ring, starting top
+    const n       = modules.length;
+    const startDeg = -90; // start at top
+    modules.forEach((mod, i) => {
+      const angleDeg = startDeg + (360 / n) * i;
+      const angleRad = (angleDeg * Math.PI) / 180;
+      const mx = cx + radius * Math.cos(angleRad) - MODULE_W / 2;
+      const my = cy + radius * Math.sin(angleRad) - MODULE_H / 2;
+      mod.style.position = 'absolute';
+      mod.style.left = mx + 'px';
+      mod.style.top  = my + 'px';
+      mod.style.width = MODULE_W + 'px';
+      // Store positions for trace drawing
+      mod._cx = cx + radius * Math.cos(angleRad);
+      mod._cy = cy + radius * Math.sin(angleRad);
+    });
+
+    // Store CPU center
+    cpuEl._cx = cx;
+    cpuEl._cy = cy;
+  }
+
+  /* Build orthogonal PCB traces (right-angle routing) as SVG paths */
+  function _buildTraces(svg, wrap, cpuEl, modules) {
+    if (window.innerWidth <= 700) return;
+    _traces = [];
+
+    modules.forEach((mod, i) => {
+      const cpuX = cpuEl._cx;
+      const cpuY = cpuEl._cy;
+      const modX = mod._cx;
+      const modY = mod._cy;
+
+      // Right-angle routing: horizontal then vertical (Manhattan routing)
+      // Choose elbow point to avoid crossing through CPU
+      const elbowX = modX;
+      const elbowY = cpuY;
+
+      const d = `M ${cpuX} ${cpuY} L ${elbowX} ${elbowY} L ${modX} ${modY}`;
+
+      // Calculate path length for dash animation
+      const totalLen = Math.abs(modX - cpuX) + Math.abs(modY - cpuY);
+
+      const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      pathEl.setAttribute('d', d);
+      pathEl.setAttribute('class', 'pn-trace');
+      pathEl.style.setProperty('--dash-len', totalLen + 'px');
+      pathEl.setAttribute('stroke-dasharray', totalLen);
+      pathEl.setAttribute('stroke-dashoffset', totalLen);
+
+      // Add solder pad at module end
+      const padEl = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      padEl.setAttribute('cx', modX);
+      padEl.setAttribute('cy', modY);
+      padEl.setAttribute('r', '5');
+      padEl.setAttribute('fill', 'var(--bg)');
+      padEl.setAttribute('stroke', 'var(--g-dim)');
+      padEl.setAttribute('stroke-width', '1.5');
+      padEl.classList.add('pn-trace-pad');
+      padEl.style.opacity = '0';
+
+      // Add solder pad at CPU end
+      const cpuPadEl = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      cpuPadEl.setAttribute('cx', cpuX);
+      cpuPadEl.setAttribute('cy', cpuY);
+      cpuPadEl.setAttribute('r', '3.5');
+      cpuPadEl.setAttribute('fill', 'var(--g-dim)');
+      cpuPadEl.setAttribute('stroke', 'none');
+      cpuPadEl.classList.add('pn-trace-pad');
+      cpuPadEl.style.opacity = '0';
+
+      svg.appendChild(pathEl);
+      svg.appendChild(padEl);
+      svg.appendChild(cpuPadEl);
+
+      _traces.push({ pathEl, padEl, cpuPadEl, len: totalLen, modIdx: i,
+                     cpuX, cpuY, modX, modY, elbowX, elbowY });
+    });
+  }
+
+  /* Fire signal pulse along a trace (GSAP motion along path) */
+  function _firePulse(traceData, isCyan) {
+    const { pathEl, cpuX, cpuY, elbowX, elbowY, modX, modY } = traceData;
+
+    const dot = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+    dot.setAttribute('r', '4');
+    dot.setAttribute('class', 'pn-pulse-dot' + (isCyan ? ' cyan' : ''));
+    pathEl.parentNode.appendChild(dot);
+
+    gsap.fromTo(dot,
+      { opacity: 0 },
+      {
+        opacity: 1,
+        duration: .08,
+        onComplete: () => {
+          gsap.to(dot, {
+            motionPath: {
+              path: pathEl,
+              align: pathEl,
+              autoRotate: false,
+            },
+            duration: .7,
+            ease: 'power1.inOut',
+            onComplete: () => {
+              gsap.to(dot, {
+                opacity: 0, duration: .2,
+                onComplete: () => dot.remove()
+              });
+              _pktCount++;
+              _updatePktCounter();
+            }
+          });
+        }
+      }
+    );
+
+    // Briefly highlight the trace
+    gsap.to(pathEl, {
+      stroke: isCyan ? 'rgba(0,200,240,.5)' : 'rgba(0,232,122,.5)',
+      duration: .3,
+      yoyo: true, repeat: 1,
+      onComplete: () => pathEl.classList.remove('active')
+    });
+  }
+
+  /* Auto-cycle pulses around the ring */
+  function _startAutoPulse(modules) {
+    let idx = 0;
+    _pulseTimer = setInterval(() => {
+      if (window.innerWidth <= 700) return;
+      const t = _traces[idx % _traces.length];
+      if (t) _firePulse(t, idx % 3 === 1);
+      idx++;
+      // Update bus utilisation
+      const util = Math.min(99, 30 + Math.floor(Math.random() * 50));
+      const utilEl = document.getElementById('pnt-util');
+      if (utilEl) utilEl.textContent = util + '%';
+    }, PULSE_INTERVAL);
+  }
+
+  function _updatePktCounter() {
+    const el = document.getElementById('pnt-pkt');
+    if (el) el.textContent = String(_pktCount).padStart(4, '0');
+  }
+
+  /* Bind hover to fire pulse toward that module */
+  function _bindHover(modules) {
+    modules.forEach((mod, i) => {
+      mod.addEventListener('mouseenter', () => {
+        if (window.innerWidth <= 700) return;
+        const t = _traces.find(tr => tr.modIdx === i);
+        if (t) _firePulse(t, i % 2 === 0);
+        // Highlight pad
+        if (t) {
+          gsap.to(t.padEl, {
+            attr: { stroke: 'var(--g)', r: 7 },
+            duration: .2, yoyo: true, repeat: 1
+          });
+        }
+      });
+    });
+  }
+
+  /* Telemetry bar live clock flicker */
+  function _startTelemetry() {
+    const clkEl = document.getElementById('pnt-clk');
+    const clkValues = ['48MHz', '96MHz', '48MHz', '24MHz', '48MHz'];
+    let ci = 0;
+    setInterval(() => {
+      ci = (ci + 1) % clkValues.length;
+      if (clkEl) clkEl.textContent = clkValues[ci];
+    }, 2200);
+  }
+
+  /* ScrollTrigger: draw traces → reveal nodes → start pulse loop */
+  function _initScrollTrigger(section, cpuEl, modules) {
+    ScrollTrigger.create({
+      trigger: section,
+      start: 'top 60%',
+      once: true,
+      onEnter: () => {
+        _revealed = true;
+        if (window.innerWidth <= 700) {
+          // Mobile: just show all modules
+          modules.forEach(m => m.classList.add('pnm-visible'));
+          return;
+        }
+
+        // 1. Draw CPU rings (they're CSS-animated already, just make sure visible)
+        gsap.fromTo(cpuEl, { opacity: 0, scale: .5 },
+          { opacity: 1, scale: 1, duration: .6, ease: 'back.out(1.5)' });
+
+        // 2. Stagger trace draws
+        _traces.forEach((t, i) => {
+          gsap.to(t.pathEl, {
+            strokeDashoffset: 0,
+            duration: .8,
+            delay: .4 + i * .15,
+            ease: 'power2.out',
+            onStart: () => t.pathEl.classList.add('active'),
+            onComplete: () => {
+              // Show solder pads
+              gsap.to([t.padEl, t.cpuPadEl], {
+                opacity: 1, duration: .2,
+                attr: { stroke: 'var(--g)' }
+              });
+              // Reveal module card
+              modules[t.modIdx].classList.add('pnm-visible');
+            }
+          });
+        });
+
+        // 3. Start auto pulses after traces are drawn
+        setTimeout(() => _startAutoPulse(modules), 1800);
+
+        // 4. Animate bus utilisation bar
+        let util = 0;
+        const utilEl = document.getElementById('pnt-util');
+        const utilAnim = setInterval(() => {
+          util = Math.min(72, util + 4);
+          if (utilEl) utilEl.textContent = util + '%';
+          if (util >= 72) clearInterval(utilAnim);
+        }, 60);
+      }
+    });
   }
 
   return { init };
 })();
-
 
 /* ══════════════════════════════════════════════════════════════
    MODULE: FirmwareSystem
@@ -998,6 +1201,8 @@ document.addEventListener('DOMContentLoaded', () => {
   ProjectSystem.init();
   ResearchSystem.init();
   NavSystem.init();
+  FirmwareSystem.init();
+  PCBNetSystem.init()
 });
 
 // Handle resize: refresh ScrollTrigger if active
